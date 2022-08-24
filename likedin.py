@@ -16,6 +16,7 @@ linkedin_profile_id='gXaSyTq5Tm'
 # 
 linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 linkedin_register_url='https://api.linkedin.com/v2/assets?action=registerUpload'
+images_url=['./post_image.jpg','./social.png']
 linkedin_register_body={
     "registerUploadRequest": {
         "recipes": [
@@ -33,43 +34,36 @@ linkedin_register_body={
 linkedin_headers = {
            'Authorization': f'Bearer {linkedin_access_token}'
            }
+media_ids=[]
+for img in images_url:
+    linkedin_register_response = requests.post(linkedin_register_url, headers=linkedin_headers, json=linkedin_register_body)
+    print('-------------------')
+    print(linkedin_register_response.json())
+    linkedin_upload_url=linkedin_register_response.json()['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
+    print(linkedin_upload_url)
+    linkedin_upload_image=open(img,'rb')
+    linkedin_upload_response = requests.put(linkedin_upload_url,data=linkedin_upload_image, headers=linkedin_headers)
+    print(linkedin_upload_response)
+    linkedin_asset_id=linkedin_register_response.json()['value']['asset']
+    media_ids.append(linkedin_asset_id)
+    print(media_ids)
 
+medias=[]
+for id in media_ids:
+    media={
+                    "status": "READY",
+                    "description": {
+                        "text": post_text
+                    },
+                    "media": id,
+                    "title": {
+                        "text": post_text
+                    }
+                }
+    print(media)
+    medias.append(media)
+    print(medias)
 
-linkedin_register_response1 = requests.post(linkedin_register_url, headers=linkedin_headers, json=linkedin_register_body)
-
-print('-------------------')
-print(linkedin_register_response1.json())
-
-linkedin_upload_url1=linkedin_register_response1.json()['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
-
-print(linkedin_upload_url1)
-
-linkedin_register_response2 = requests.post(linkedin_register_url, headers=linkedin_headers, json=linkedin_register_body)
-
-print('-------------------')
-print(linkedin_register_response2.json())
-
-linkedin_upload_url2=linkedin_register_response2.json()['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
-
-print(linkedin_upload_url2)
-
-local_image_url1='./post_image.jpg'
-linkedin_upload_image1=open(local_image_url1,'rb')
-
-linkedin_upload_response1 = requests.put(linkedin_upload_url1,data=linkedin_upload_image1, headers=linkedin_headers)
-print(linkedin_upload_response1)
-
-linkedin_asset_id1=linkedin_register_response1.json()['value']['asset']
-print(linkedin_asset_id1)
-
-local_image_url2='./social.png'
-linkedin_upload_image2=open(local_image_url2,'rb')
-
-linkedin_upload_response2 = requests.put(linkedin_upload_url2,data=linkedin_upload_image2, headers=linkedin_headers)
-print(linkedin_upload_response2)
-
-linkedin_asset_id2=linkedin_register_response2.json()['value']['asset']
-print(linkedin_asset_id2)
 linkedin_post_data = {
     "author": f"urn:li:person:{linkedin_profile_id}",
     "lifecycleState": "PUBLISHED",
@@ -79,28 +73,7 @@ linkedin_post_data = {
                 "text":post_text
             },
             "shareMediaCategory": "IMAGE",
-             "media":[
-                {
-                    "status": "READY",
-                    "description": {
-                        "text": "Center stage!"
-                    },
-                    "media": linkedin_asset_id1,
-                    "title": {
-                        "text": "LinkedIn Talent Connect 2021"
-                    }
-                },
-                {
-                    "status": "READY",
-                    "description": {
-                        "text": "Center stage!"
-                    },
-                    "media": linkedin_asset_id2,
-                    "title": {
-                        "text": "LinkedIn Talent Connect 2021"
-                    }
-                }
-            ]
+             "media":medias
         }
     },
     "visibility": {
