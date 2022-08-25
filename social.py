@@ -309,7 +309,7 @@ def instagram_get_username(id, token):
 
 # * Instagram Post Functions
 
-def instagram_media_post(id,image_url,text,token):
+def instagram_media_post(id,image_url,text,token,is_multiple=False):
     """
     This Function uploads the image to Instagram
     """
@@ -320,11 +320,37 @@ def instagram_media_post(id,image_url,text,token):
         'caption': text,
         'access_token': token
     }
+    if is_multiple:
+        instagram_media_payload = {
+        'image_url': image_url,
+        'caption':text,
+        'is_carousel_item':'true',
+        'access_token': token
+        }
     url=instagram_media_request_url.format(id)
     instagram_media_response = requests.post(url, data=instagram_media_payload)
     instagram_creation_id = instagram_media_response.json()['id']
     print('-------Image Upload Instagram-DONE-------')
     return instagram_creation_id
+
+
+def instagram_carousel_post(id,medias,text,token):
+    """
+    This Function uploads the carousel to Instagram
+    """
+    # Send POST request to media url
+    # Request payload for Instagram media request
+    instagram_carousel_payload = {
+    'media_type': 'CAROUSEL',
+    'caption':text,
+    'children':','.join(medias),
+    'access_token': token
+    }
+    url=instagram_media_request_url.format(id)
+    instagram_media_response = requests.post(url, data=instagram_carousel_payload)
+    instagram_carousel_id = instagram_media_response.json()['id']
+    print('-------Carousel Upload Instagram-DONE-------')
+    return instagram_carousel_id
 
 
 def post_instagram(id,creation_id,token):
@@ -513,11 +539,15 @@ def make_post_facebook(description,urls,token,page_id):
     return post_id
 
 
-def make_post_instagram(description,url,token,user_id):
+def make_post_instagram(description,urls,token,user_id):
     """
     This Function calls necessary functions to make a Instagram post
     """
-    creation_id=instagram_media_post(user_id,url,description,token)
+    if len(urls)<2:
+        creation_id=instagram_media_post(user_id,urls,description,token)
+    else:
+        medias=[instagram_media_post(user_id,url,description,token,True)for url in urls]
+        creation_id=instagram_carousel_post(user_id,medias,description,token)
     instagram_post_id = post_instagram(user_id,creation_id,token)
     return instagram_post_id
 
