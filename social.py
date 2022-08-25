@@ -1,3 +1,4 @@
+import json
 import requests
 
 # APP DETAILS
@@ -84,8 +85,10 @@ instagram_user_url ='https://graph.facebook.com/v10.0/{}?fields=instagram_busine
 instagram_media_request_url ='https://graph.facebook.com/v10.0/{}/media'
 # Instagram Graph API publish URL
 instagram_publish_url ='https://graph.facebook.com/v10.0/{}/media_publish'
+# Facebook Upload URL
+facebook_photo_upload_url='https://graph.facebook.com/v14.0/{}/photos'
 # Facebook API Request URL
-facebook_request_url ='https://graph.facebook.com/{}/photos'
+facebook_request_url ='https://graph.facebook.com/{}/feed'
 # Facebook Authentication URL
 facebook_auth_url ='https://www.facebook.com/v14.0/dialog/oauth?response_type&client_id={}&redirect_uri={}&scope={}&response_type=code&state=987654321'
 # Facebook Token URL
@@ -108,33 +111,6 @@ linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 linkedin_register_url = 'https://api.linkedin.com/v2/assets?action=registerUpload'
 # LinkedIn API URL to Upload Image
 linkedin_upload_url = ''
-
-# DATA & Headers
-# Facebook Page ID Payload
-facebook_page_id_payload = {
-    'access_token': facebook_page_access_token
-}
-
-# Request payload for LinkedIn Register
-linkedin_register_body = {
-    "registerUploadRequest": {
-        "recipes": [
-            "urn:li:digitalmediaRecipe:feedshare-image"
-        ],
-        "owner": f"urn:li:person:{linkedin_profile_id}",
-        "serviceRelationships": [
-            {
-                "relationshipType": "OWNER",
-                "identifier": "urn:li:userGeneratedContent"
-            }
-        ]
-    }
-}
-# Request Header for LinkedIn
-linkedin_headers = {
-    'Authorization': f'Bearer {linkedin_access_token}'
-}
-
 
 # FUNCTIONS
 # ! This function is for debugging purposes
@@ -270,7 +246,17 @@ def facebook_get_long_token(token):
 
 # * Facebook Post Functions
 
-def post_facebook(text,image_url,token,page_id):
+def facebook_upload(img,token,id):
+    url=facebook_photo_upload_url.format(id)
+    facebook_upload_body={
+                'url':img,
+                'published':'false',
+                'access_token':token
+                }
+    facebook_image_response= requests.post(url,data=facebook_upload_body)
+    return facebook_image_response.json()['id']
+
+def post_facebook(text,media,token,page_id):
     """
     This Function Posts the data to Facebook
     """
@@ -279,7 +265,7 @@ def post_facebook(text,image_url,token,page_id):
     # Facebook Request Payload
     facebook_post_payload = {
         'message': text,
-        'url': image_url,
+        'attached_media':json.dumps(media),
         'access_token': token
     }
     facebook_resonse = requests.post(url, data=facebook_post_payload)
@@ -518,11 +504,12 @@ def authenticate_instagram(credentials):
     return instagram_credentials
 
 
-def make_post_facebook(description,url,token,page_id):
+def make_post_facebook(description,urls,token,page_id):
     """
     This Function calls necessary functions to make a Facebook post
     """
-    post_id=post_facebook(description,url,token,page_id)
+    medias=[{'media_fbid':facebook_upload(url,token,page_id)} for url in urls]
+    post_id=post_facebook(description,medias,token,page_id)
     return post_id
 
 
@@ -551,13 +538,14 @@ def make_post_linkedin(token, description, path):
 
 
 #  ? Outer Functions
-def make_linkedin_post(linkedinToken, description, path):   
+# * Post Functions
+def make_linkedin_post(linkedinToken, description, paths):   
     """
     This Function Calls the other linkedin functions to make post
     """
     id=''
     if(not(len(linkedinToken) == 0)):
-        id=make_post_linkedin(linkedinToken, description, path)
+        id=make_post_linkedin(linkedinToken, description, paths)
     else:
         return
     print("---LinkedIn Post Is Done-----------")
@@ -566,27 +554,27 @@ def make_linkedin_post(linkedinToken, description, path):
     return id
 
 
-def make_facebook_posts(description,url,token,page_id):
+def make_facebook_posts(description,urls,token,page_id):
     """
     This Function Calls the other facebook functions to make post
     """
     post_id=''
     if(not(len(token) == 0)):
-        post_id=make_post_facebook(description,url,token,page_id)
+        post_id=make_post_facebook(description,urls,token,page_id)
     else:
         return
     print("---Facebook Post Is Done-----------")
     if type(post_id) == dict:
         return post_id
-    return f'{page_id}_{post_id}'
+    return f'{post_id}'
 
 
-def make_instagram_posts(description,url,token,user_id):
+def make_instagram_posts(description,urls,token,user_id):
     """
     This Function Calls the other instagram functions to make post
     """
     if(not(len(token) == 0)):
-        instagram_post_id = make_post_instagram(description,url,token,user_id)
+        instagram_post_id = make_post_instagram(description,urls,token,user_id)
     else:
         return
     print("---Instagram Post Is Done-----------")
