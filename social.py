@@ -67,7 +67,7 @@ facebook_name = ''
 # Post Description
 post_description = """"""
 # Post Text(title+description)
-post_text = f"""{post_description}"""
+post_text = """{}"""
 # URL of the image to post
 image_url = ''
 # Image file name for download
@@ -110,23 +110,6 @@ linkedin_register_url = 'https://api.linkedin.com/v2/assets?action=registerUploa
 linkedin_upload_url = ''
 
 # DATA & Headers
-# Request payload for Instagram media request
-instagram_media_payload = {
-    'image_url': image_url,
-    'caption': post_text,
-    'access_token': facebook_page_access_token
-}
-# Payload for Instagram publish request
-instagram_publish_payload = {
-    'creation_id': instagram_creation_id,
-    'access_token': facebook_page_access_token
-}
-# Facebook Request Payload
-facebook_post_payload = {
-    'message': post_text,
-    'url': image_url,
-    'access_token': facebook_page_access_token
-}
 # Facebook Page ID Payload
 facebook_page_id_payload = {
     'access_token': facebook_page_access_token
@@ -151,34 +134,7 @@ linkedin_register_body = {
 linkedin_headers = {
     'Authorization': f'Bearer {linkedin_access_token}'
 }
-# Request payload for LinkedIn Post
-linkedin_post_data = {
-    "author": f"urn:li:person:{linkedin_profile_id}",
-    "lifecycleState": "PUBLISHED",
-    "specificContent": {
-        "com.linkedin.ugc.ShareContent": {
-            "shareCommentary": {
-                "text": post_text
-            },
-            "shareMediaCategory": "IMAGE",
-            "media": [
-                {
-                    "status": "READY",
-                    "description": {
-                        "text": "Center stage!"
-                    },
-                    "media": linkedin_asset_id,
-                    "title": {
-                        "text": "LinkedIn Talent Connect 2021"
-                    }
-                }
-            ]
-        }
-    },
-    "visibility": {
-        "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
-    }
-}
+
 
 # FUNCTIONS
 # ! This function is for debugging purposes
@@ -312,21 +268,28 @@ def facebook_get_long_token(token):
     print('-------Facebook Page Long Token DONE-------')
     return long_token
 
+# * Facebook Post Functions
 
-def post_facebook():
+def post_facebook(text,image_url,token,page_id):
     """
     This Function Posts the data to Facebook
     """
     # Send POST request to Facebook API
-    global facebook_post_id
-    facebook_resonse = requests.post(
-        facebook_request_url, data=facebook_post_payload)
+    url=facebook_request_url.format(page_id)
+    # Facebook Request Payload
+    facebook_post_payload = {
+        'message': text,
+        'url': image_url,
+        'access_token': token
+    }
+    facebook_resonse = requests.post(url, data=facebook_post_payload)
     if facebook_resonse.json().get('error', False):
         print('-------Facebook Post-ERROR-------')
         print(facebook_resonse.json()['error'])
         return facebook_resonse.json()['error']
     facebook_post_id = facebook_resonse.json()['id']
     print('-------Facebook Post-DONE-------')
+    return facebook_post_id
 
 # ! Unused
 
@@ -358,28 +321,38 @@ def instagram_get_username(id, token):
     print("---Instagram Username Found---------")
     return instagram_username_response.json().get('username', '')
 
+# * Instagram Post Functions
 
-def instagram_media_post():
+def instagram_media_post(id,image_url,text,token):
     """
     This Function uploads the image to Instagram
     """
-    global instagram_creation_id, instagram_publish_payload
     # Send POST request to media url
-    instagram_media_response = requests.post(
-        instagram_media_request_url, data=instagram_media_payload)
+    # Request payload for Instagram media request
+    instagram_media_payload = {
+        'image_url': image_url,
+        'caption': text,
+        'access_token': token
+    }
+    url=instagram_media_request_url.format(id)
+    instagram_media_response = requests.post(url, data=instagram_media_payload)
     instagram_creation_id = instagram_media_response.json()['id']
-    instagram_publish_payload['creation_id'] = instagram_creation_id
     print('-------Image Upload Instagram-DONE-------')
+    return instagram_creation_id
 
 
-def post_instagram():
+def post_instagram(id,creation_id,token):
     """
     This Function Posts the data to Instagram
     it uses the creation_id returned from instagram_media_post to attach image
     """
-    global instagram_post_id
-    instagram_publish_response = requests.post(
-        instagram_publish_url, data=instagram_publish_payload)
+    url=instagram_publish_url.format(id)
+    # Payload for Instagram publish request
+    instagram_publish_payload = {
+        'creation_id': creation_id,
+        'access_token': token
+    }
+    instagram_publish_response = requests.post(url, data=instagram_publish_payload)
     if instagram_publish_response.json().get('error', False):
         print('-------Instagram Post-ERROR-------')
         print(instagram_publish_response.json()['error'])
@@ -425,46 +398,87 @@ def linkedin_get_id(headers):
     This Function Gets LinkedIn Profile ID
     """
     linkedin_me_response = requests.get(linkedin_me_url, headers=headers)
+    print(linkedin_me_response.text)
     linkedin_profile_id = linkedin_me_response.json()['id']
     linkedin_name = f"{linkedin_me_response.json()['localizedFirstName']} {linkedin_me_response.json()['localizedLastName']}"
     print('-------LinkedIn Profile ID-DONE-------')
     return {'name':linkedin_name,'id':linkedin_profile_id}
 
-
-def linkedin_register():
+# * Linkedin Post Functions
+def linkedin_register(header,id):
     """
     This Function calls the register API from LinkedIn to get asset_id and upload_url
     """
     global linkedin_asset_id, linkedin_upload_url, linkedin_post_data
-    linkedin_register_response = requests.post(
-        linkedin_register_url, headers=linkedin_headers, json=linkedin_register_body)
+    # Request payload for LinkedIn Register
+    linkedin_register_body = {
+        "registerUploadRequest": {
+            "recipes": [
+                "urn:li:digitalmediaRecipe:feedshare-image"
+            ],
+            "owner": f"urn:li:person:{id}",
+            "serviceRelationships": [
+                {
+                    "relationshipType": "OWNER",
+                    "identifier": "urn:li:userGeneratedContent"
+                }
+            ]
+        }
+    }
+    linkedin_register_response = requests.post(linkedin_register_url, headers=header, json=linkedin_register_body)
     linkedin_upload_url = linkedin_register_response.json(
     )['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
     linkedin_asset_id = linkedin_register_response.json()['value']['asset']
-    linkedin_post_data["specificContent"]["com.linkedin.ugc.ShareContent"]["media"][0]["media"] = linkedin_asset_id
     print('-------LinkedIn Register-DONE-------')
+    return {'url':linkedin_upload_url,'asset':linkedin_asset_id}
 
 
-def linkedin_upload_image():
+def linkedin_upload_image(url,header,path):
     """
     This Function uploads the image to LinkedIn using the upload_url returned by linkedin_register
     """
-    linkedin_image = open(local_image_url, 'rb')
-    linkedin_upload_response = requests.put(
-        linkedin_upload_url, data=linkedin_image, headers=linkedin_headers)
+    linkedin_image = open(path, 'rb')
+    linkedin_upload_response = requests.put(url, data=linkedin_image, headers=header)
     print('-------Image Upload LinkedIn-DONE-------')
 
 
-def post_linkedin():
+def post_linkedin(id,header,asset,text):
     """
     This Function posts the data to LinkedIn 
     It uses the asset_id returned by linkedin_register to attach image
     """
-    global linkedin_post_id
-    linkedin_post_response = requests.post(
-        linkedin_url, headers=linkedin_headers, json=linkedin_post_data)
+    # Request payload for LinkedIn Post
+    linkedin_post_data = {
+        "author": f"urn:li:person:{id}",
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {
+            "com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {
+                    "text": text
+                },
+                "shareMediaCategory": "IMAGE",
+                "media": [
+                    {
+                        "status": "READY",
+                        "description": {
+                            "text": "Center stage!"
+                        },
+                        "media": asset,
+                        "title": {
+                            "text": "LinkedIn Talent Connect 2021"
+                        }
+                    }
+                ]
+            }
+        },
+        "visibility": {
+            "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+        }
+    }
+    linkedin_post_response = requests.post(linkedin_url, headers=header, json=linkedin_post_data)
     linkedin_post_id = linkedin_post_response.json()['id']
     print('-------LinkedIn Post-DONE-------')
+    return linkedin_post_id
 
 
 def authenticate_linkedin(code):
@@ -504,84 +518,83 @@ def authenticate_instagram(credentials):
     return instagram_credentials
 
 
-def make_post_facebook():
+def make_post_facebook(description,url,token,page_id):
     """
     This Function calls necessary functions to make a Facebook post
     """
-    post_facebook()
+    post_id=post_facebook(description,url,token,page_id)
+    return post_id
 
 
-def make_post_instagram():
+def make_post_instagram(description,url,token,user_id):
     """
     This Function calls necessary functions to make a Instagram post
     """
-    # instagram_get_user_id()
-    instagram_media_post()
-    instagram_post_id = post_instagram()
+    creation_id=instagram_media_post(user_id,url,description,token)
+    instagram_post_id = post_instagram(user_id,creation_id,token)
     return instagram_post_id
 
 
-def make_post_linkedin():
+def make_post_linkedin(token, description, path):
     """
     This Function calls necessary functions to make a LinkedIn post
     """
-    linkedin_get_id()
-    linkedin_register()
-    linkedin_upload_image()
-    post_linkedin()
+    # Request Header for LinkedIn
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    idresp=linkedin_get_id(headers)
+    reg_resp=linkedin_register(headers,idresp['id'])
+    linkedin_upload_image(reg_resp['url'],headers,path)
+    post_id=post_linkedin(idresp['id'],headers,reg_resp['asset'],description)
+    return f"{idresp['id']}_{post_id}"
 
 
-def make_linkedin_post(linkedinToken, description, path, url, socials):
+#  ? Outer Functions
+def make_linkedin_post(linkedinToken, description, path):   
     """
     This Function Calls the other linkedin functions to make post
     """
-    is_post_done = []
-    save_values(description, path, url,
-                '', linkedinToken, '', '')
+    id=''
     if(not(len(linkedinToken) == 0)):
-        make_post_linkedin()
-        is_post_done.append('linkedin')
+        id=make_post_linkedin(linkedinToken, description, path)
     else:
         return
     print("---LinkedIn Post Is Done-----------")
     if type(linkedin_post_id) == dict:
         return linkedin_post_id
-    return f'{linkedin_profile_id}_{linkedin_post_id}'
+    return id
 
 
-def make_facebook_posts(facebookToken, pageId, description, path, url):
+def make_facebook_posts(description,url,token,page_id):
     """
     This Function Calls the other facebook functions to make post
     """
-    is_post_done = []
-    save_values(description, path, url, facebookToken, '', pageId, '')
-    if(not(len(facebookToken) == 0)):
-        make_post_facebook()
-        is_post_done.append('facebook')
+    post_id=''
+    if(not(len(token) == 0)):
+        post_id=make_post_facebook(description,url,token,page_id)
     else:
         return
     print("---Facebook Post Is Done-----------")
-    if type(facebook_post_id) == dict:
-        return facebook_post_id
-    return f'{pageId}_{facebook_post_id}'
+    if type(post_id) == dict:
+        return post_id
+    return f'{page_id}_{post_id}'
 
 
-def make_instagram_posts(instagramToken, pageId, userId, description, path, url):
+def make_instagram_posts(description,url,token,user_id):
     """
     This Function Calls the other instagram functions to make post
     """
-    is_post_done = []
-    save_values(description, path, url, instagramToken, '', '', userId)
-    if(not(len(instagramToken) == 0)):
-        instagram_post_id = make_post_instagram()
-        is_post_done.append('instagram')
+    if(not(len(token) == 0)):
+        instagram_post_id = make_post_instagram(description,url,token,user_id)
     else:
         return
     print("---Instagram Post Is Done-----------")
     if type(instagram_post_id) == dict:
         return instagram_post_id
-    return f'{userId}_{instagram_post_id}'
+    return f'{user_id}_{instagram_post_id}'
 
+# * Authentication Function
 
 def authenticate_social(linkedinCode, facebookCode):
     """
