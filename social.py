@@ -454,7 +454,7 @@ def linkedin_upload_image(url,header,path):
     print('-------Image Upload LinkedIn-DONE-------')
 
 
-def post_linkedin(id,header,asset,text):
+def post_linkedin(id,header,medias,text):
     """
     This Function posts the data to LinkedIn 
     It uses the asset_id returned by linkedin_register to attach image
@@ -469,18 +469,7 @@ def post_linkedin(id,header,asset,text):
                     "text": text
                 },
                 "shareMediaCategory": "IMAGE",
-                "media": [
-                    {
-                        "status": "READY",
-                        "description": {
-                            "text": "Center stage!"
-                        },
-                        "media": asset,
-                        "title": {
-                            "text": "LinkedIn Talent Connect 2021"
-                        }
-                    }
-                ]
+                "media": medias
             }
         },
         "visibility": {
@@ -552,7 +541,7 @@ def make_post_instagram(description,urls,token,user_id):
     return instagram_post_id
 
 
-def make_post_linkedin(token, description, path):
+def make_post_linkedin(token, description, paths):
     """
     This Function calls necessary functions to make a LinkedIn post
     """
@@ -561,9 +550,22 @@ def make_post_linkedin(token, description, path):
         'Authorization': f'Bearer {token}'
     }
     idresp=linkedin_get_id(headers)
-    reg_resp=linkedin_register(headers,idresp['id'])
-    linkedin_upload_image(reg_resp['url'],headers,path)
-    post_id=post_linkedin(idresp['id'],headers,reg_resp['asset'],description)
+    medias=[]
+    for path in paths:
+        reg_resp=linkedin_register(headers,idresp['id'])
+        linkedin_upload_image(reg_resp['url'],headers,path)
+        media={
+                    "status": "READY",
+                    "description": {
+                        "text": post_text
+                    },
+                    "media": reg_resp['asset'],
+                    "title": {
+                        "text": post_text
+                    }
+                }
+        medias.append(media)
+    post_id=post_linkedin(idresp['id'],headers,medias,description)
     return f"{idresp['id']}_{post_id}"
 
 
