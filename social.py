@@ -125,37 +125,6 @@ def print_response(resonse, is_json=True):
     else:
         print(resonse)
 
-
-def save_values(description, path, url, facebookToken, linkedinToken, pageId, userId):
-    """
-    This Function saves the values of description, file path, image url, facebook access token, linkedin access token, pageId and text 
-    """
-    global post_text, post_description, local_image_url, image_url, instagram_media_payload, facebook_post_payload, facebook_page_access_token, facebook_page_token_url, linkedin_access_token, linkedin_headers, instagram_publish_payload, facebook_page_id, facebook_request_url, instagram_user_url, facebook_user_id, instagram_publish_url, instagram_media_request_url
-    post_description = description
-    local_image_url = path
-    image_url = url
-    facebook_page_access_token = facebookToken
-    linkedin_access_token = linkedinToken
-    instagram_user_id = userId
-    post_text = f"""{post_description}"""
-    instagram_media_payload['caption'] = post_text
-    facebook_post_payload['message'] = post_text
-    linkedin_post_data['specificContent']['com.linkedin.ugc.ShareContent']['shareCommentary']['text'] = post_text
-    instagram_media_payload['image_url'] = image_url
-    facebook_post_payload['url'] = image_url
-    instagram_media_payload['access_token'] = facebook_page_access_token
-    instagram_publish_payload['access_token'] = facebook_page_access_token
-    facebook_post_payload['access_token'] = facebook_page_access_token
-    facebook_page_token_url = f'https://graph.facebook.com/{facebook_user_id}?fields=access_token&access_token={facebook_user_access_token}&scope={facebook_scopes}'
-    linkedin_headers['Authorization'] = f'Bearer {linkedin_access_token}'
-    facebook_page_id = pageId
-    facebook_user_id = pageId
-    facebook_request_url = f'https://graph.facebook.com/{facebook_page_id}/photos'
-    instagram_user_url = f'https://graph.facebook.com/v10.0/{facebook_page_id}?fields=instagram_business_account&access_token={facebook_page_access_token}'
-    instagram_media_request_url = f'https://graph.facebook.com/v10.0/{instagram_user_id}/media'
-    instagram_publish_url = f'https://graph.facebook.com/v10.0/{instagram_user_id}/media_publish'
-    print('-------Saved Values DONE-------')
-
 #  ! Unused
 def facebook_get_code(code):
     """
@@ -402,7 +371,9 @@ def linkedin_authenticate(code):
     }
     linkedin_token_response = requests.post(linkedin_token_url, data=linkedin_auth_body)
     linkedin_access_token = linkedin_token_response.json()["access_token"]
-    linkedin_headers['Authorization'] = f'Bearer {linkedin_access_token}'
+    linkedin_headers = {
+           'Authorization': f'Bearer {linkedin_access_token}'
+           }
     print('-------LinkedIn Authentication-DONE-------')
     return {'token':linkedin_access_token,'headers':linkedin_headers}
 
@@ -553,6 +524,7 @@ def make_post_linkedin(token, description, paths):
     idresp=linkedin_get_id(headers)
     medias=[]
     for path in paths:
+        
         reg_resp=linkedin_register(headers,idresp['id'])
         linkedin_upload_image(reg_resp['url'],headers,path)
         media={
