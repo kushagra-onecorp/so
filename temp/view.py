@@ -43,7 +43,7 @@ def createPost_f(request):
             images = []
             for Image in Images:
                 filedata = second_file_uploader(
-                    Image, "social", 'post_image.jpg')
+                    Image, "social", f'post_image.jpg{Images.index(Image)}')
                 path = '/home/ubuntu/Rashtradharma' + \
                     filedata['path']+'/'+filedata['fileName']
                 img_url = 'https://promote.onecorp.co.in' + \
