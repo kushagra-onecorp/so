@@ -4,7 +4,7 @@ import requests
 
 facebook_client_id = '1413167462458195'
 facebook_client_secret = '7dc4593de12dfb15e973ff9ef2528f5e'
-facebook_redirect_url = 'https://social.onecorp.co.in/save-credentials/'
+facebook_redirect_url = 'https://onepost.sasone.in/linked-accounts/facebook/'
 
 # ! NEEDED PERMISSIONS
 # ? public_profile

@@ -3,7 +3,7 @@ import requests
 linkedin_client_id = '78l55cr29sl11s'
 linkedin_client_secret = 'gR78hqshNl4dimkc'
 
-redirect_url = 'https://social.onecorp.co.in/save-credentials/'
+redirect_url = 'https://onepost.sasone.in/linked-accounts/linkedin/'
 
 linkedin_scope = 'r_emailaddress,r_liteprofile,w_member_social'
 

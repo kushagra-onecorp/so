@@ -254,7 +254,9 @@ def facebook_upload(img,token,id):
                 'access_token':token
                 }
     facebook_image_response= requests.post(url,data=facebook_upload_body)
-    return facebook_image_response.json()['id']
+    id=facebook_image_response.json()['id']
+    print(f'-------Facebook Image Upload for:{id}-Done-------')
+    return id
 
 def post_facebook(text,media,token,page_id):
     """
@@ -330,7 +332,7 @@ def instagram_media_post(id,image_url,text,token,is_multiple=False):
     url=instagram_media_request_url.format(id)
     instagram_media_response = requests.post(url, data=instagram_media_payload)
     instagram_creation_id = instagram_media_response.json()['id']
-    print('-------Image Upload Instagram-DONE-------')
+    print(f'-------Image Upload Instagram for:{instagram_creation_id}-DONE-------')
     return instagram_creation_id
 
 
@@ -410,7 +412,6 @@ def linkedin_get_id(headers):
     This Function Gets LinkedIn Profile ID
     """
     linkedin_me_response = requests.get(linkedin_me_url, headers=headers)
-    print(linkedin_me_response.text)
     linkedin_profile_id = linkedin_me_response.json()['id']
     linkedin_name = f"{linkedin_me_response.json()['localizedFirstName']} {linkedin_me_response.json()['localizedLastName']}"
     print('-------LinkedIn Profile ID-DONE-------')
@@ -441,7 +442,7 @@ def linkedin_register(header,id):
     linkedin_upload_url = linkedin_register_response.json(
     )['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
     linkedin_asset_id = linkedin_register_response.json()['value']['asset']
-    print('-------LinkedIn Register-DONE-------')
+    print(f'-------LinkedIn Register for:{linkedin_asset_id}-DONE-------')
     return {'url':linkedin_upload_url,'asset':linkedin_asset_id}
 
 
