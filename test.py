@@ -26,4 +26,3 @@ def Authenticate():
      codeLink=input('LinkedinCode:')
      print(authenticate_social(codeLink,codeFB))
      
-makePosts()
