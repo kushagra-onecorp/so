@@ -16,7 +16,7 @@ linkedin_profile_id='gXaSyTq5Tm'
 # 
 linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 linkedin_register_url='https://api.linkedin.com/v2/assets?action=registerUpload'
-images_url=['./post_image.jpg','./social.png']
+images_url=['./images/post_image.jpg']
 linkedin_register_body={
     "registerUploadRequest": {
         "recipes": [
