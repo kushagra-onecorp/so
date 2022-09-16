@@ -1,23 +1,26 @@
 import json
+from time import sleep
 import requests
 
 # APP DETAILS
-# LinkedIn CLient ID
+# FaceBook CLient ID
 facebook_client_id = '807577897280884'
-# LinkedIn CLient Secret
+# FaceBook CLient Secret
 facebook_client_secret = 'e4d86fb35a7e3161bda20250a19cc995'
 # LinkedIn CLient ID
-linkedin_client_id = '78l55cr29sl11s'
+linkedin_client_id = '775gacntogd1of'
 # LinkedIn CLient Secret
-linkedin_client_secret = 'gR78hqshNl4dimkc'
+linkedin_client_secret = '1SoIlDzDyXk48egX'
 # Base URL
-BASE_URL='https://onepost.sasone.in'
+BASE_URL = 'https://onepost.sasone.in'
 # Base Redirect URL
-BASE_REDIRECT_URL=f'{BASE_URL}/linked-accounts'
+BASE_REDIRECT_URL = f'{BASE_URL}/linked-accounts'
 # Facebook Redirect URL
 facebook_redirect_url = f'{BASE_REDIRECT_URL}/facebook/'
 # Redirect URL for LinkedIn
 linkedin_redirect_url = f'{BASE_REDIRECT_URL}/linkedin/'
+# common redirect URL
+redirect_url = f'{BASE_REDIRECT_URL}/{""}/'
 # LinkedIn Permission Scopes
 linkedin_scopes = 'r_emailaddress,r_liteprofile,w_member_social'
 # Facebook Permission Scopes
@@ -80,27 +83,31 @@ local_image_url = f''
 # API Request URL to get user name and detials
 instagram_user_name_url = 'https://graph.facebook.com/v14.0/{}?access_token={}&fields=id,media_count,username'
 # API Request URL to get user id
-instagram_user_url ='https://graph.facebook.com/v10.0/{}?fields=instagram_business_account&access_token={}'
-# API Request URL to upload the image
-instagram_media_request_url ='https://graph.facebook.com/v10.0/{}/media'
+instagram_user_url = 'https://graph.facebook.com/v10.0/{}?fields=instagram_business_account&access_token={}'
+# API Request URL to upload the media(Video,Image,Carousel)
+instagram_media_request_url = 'https://graph.facebook.com/v10.0/{}/media'
+# API Request URL to check the media status
+instagram_status_url = 'https://graph.facebook.com/v10.0/{}?fields=status_code&access_token={}'
 # Instagram Graph API publish URL
-instagram_publish_url ='https://graph.facebook.com/v10.0/{}/media_publish'
+instagram_publish_url = 'https://graph.facebook.com/v10.0/{}/media_publish'
 # Facebook Upload URL
-facebook_photo_upload_url='https://graph.facebook.com/v14.0/{}/photos'
+facebook_photo_upload_url = 'https://graph.facebook.com/v14.0/{}/photos'
 # Facebook API Request URL
-facebook_request_url ='https://graph.facebook.com/{}/feed'
+facebook_request_url = 'https://graph.facebook.com/{}/feed'
+# Facebook Video post URL
+facebook_video_upload_url = 'https://graph.facebook.com/v15.0/{}/videos'
 # Facebook Authentication URL
-facebook_auth_url ='https://www.facebook.com/v14.0/dialog/oauth?response_type&client_id={}&redirect_uri={}&scope={}&response_type=code&state=987654321'
+facebook_auth_url = 'https://www.facebook.com/v14.0/dialog/oauth?response_type&client_id={}&redirect_uri={}&scope={}&response_type=code&state=987654321'
 # Facebook Token URL
 facebook_token_url = "https://graph.facebook.com/v14.0/oauth/access_token?redirect_uri={}&scope={}&client_id={}&client_secret={}&code={}"
 # Facebook Me URL
 facebook_me_url = 'https://graph.facebook.com/me?fields=id,name'
 # Facebook Page Token URL
-facebook_page_token_url ='https://graph.facebook.com/{}/accounts?access_token={}'
+facebook_page_token_url = 'https://graph.facebook.com/{}/accounts?access_token={}'
 # Facebook Long Page Token URL
-facebook_long_token_url ='https://graph.facebook.com/v14.0/oauth/access_token?grant_type=fb_exchange_token&client_id={}&client_secret={}&fb_exchange_token={}'
+facebook_long_token_url = 'https://graph.facebook.com/v14.0/oauth/access_token?grant_type=fb_exchange_token&client_id={}&client_secret={}&fb_exchange_token={}'
 # LinkedIn Authentication URL
-linkedin_auth_url ='https://www.linkedin.com/oauth/v2/authorization?response_type=code&state=987654321&scope={}&client_id={}&redirect_uri={}'
+linkedin_auth_url = 'https://www.linkedin.com/oauth/v2/authorization?response_type=code&state=987654321&scope={}&client_id={}&redirect_uri={}'
 # LinkedIn URL to get token
 linkedin_token_url = "https://www.linkedin.com/oauth/v2/accessToken"
 # LinkedIn URL to get account info
@@ -120,12 +127,14 @@ def print_response(resonse, is_json=True):
     """
     This Function Prints the Response it gets
     """
-    if(is_json):
+    if (is_json):
         print(resonse.json())
     else:
         print(resonse)
 
 #  ! Unused
+
+
 def facebook_get_code(code):
     """
     This Function Recieves the facebook_code and then saves it
@@ -136,14 +145,21 @@ def facebook_get_code(code):
     print('-------Facebook Authentication Code-DONE-------')
 
 # * Used
-def facebook_get_user_auth(code):
+
+
+def updateEndpoint(RedirectEndPoint):
+    redirect_url = f'{BASE_REDIRECT_URL}/{RedirectEndPoint}/'
+    return redirect_url
+
+
+def facebook_get_user_auth(code, redirect_url):
     """
     This Function calls the facebook Authentication api to get User Access Token
     """
-    url=facebook_token_url.format(facebook_redirect_url,facebook_scopes,facebook_client_id,facebook_client_secret,code)
+    url = facebook_token_url.format(
+        redirect_url, facebook_scopes, facebook_client_id, facebook_client_secret, code)
     facebook_token_response = requests.get(url)
     facebook_user_access_token = facebook_token_response.json()['access_token']
-    print('--------------',facebook_user_access_token)
     print('-------Facebook User Authentication DONE-------')
     return facebook_user_access_token
 
@@ -154,13 +170,13 @@ def facebook_get_user_id(token):
     """
     # Facebook Me Payload
     facebook_me_payload = {
-    'access_token': token
+        'access_token': token
     }
     facebook_me_response = requests.get(facebook_me_url,  facebook_me_payload)
     facebook_user_id = facebook_me_response.json()['id']
     facebook_name = facebook_me_response.json()['name']
     print('-------Facebook User ID DONE-------')
-    return {'id':facebook_user_id,'name':facebook_name}
+    return {'id': facebook_user_id, 'name': facebook_name}
 
 # !Unused
 
@@ -172,7 +188,7 @@ def facebook_get_page_id(token):
     global facebook_page_id, facebook_request_url, instagram_user_url, facebook_user_id
     # Facebook Me Payload
     facebook_me_payload = {
-    'access_token': token
+        'access_token': token
     }
     facebook_me_response = requests.get(facebook_me_url,  facebook_me_payload)
     facebook_page_id = facebook_me_response.json()['id']
@@ -182,13 +198,15 @@ def facebook_get_page_id(token):
     print('-------Facebook Page ID DONE-------')
 
 # * Used
-def facebook_page_auth(uid,token):
+
+
+def facebook_page_auth(uid, token):
     """
     This Function gets the facebook_page_access_token(s) for all the pages user has
     returns: array of facebook page credentials(token,id,name)
     """
     facebook_credentials = []
-    url=facebook_page_token_url.format(uid,token)
+    url = facebook_page_token_url.format(uid, token)
     facebook_page_responses = requests.get(url)
     for response in facebook_page_responses.json()['data']:
         print(f'-------Authenticating For Page:{response["name"]}-------')
@@ -208,7 +226,8 @@ def facebook_get_long_token(token):
     This Function exchanges Short Lived Token with a Long Lived Token
     arguments: token
     """
-    url =facebook_long_token_url.format(facebook_client_id,facebook_client_secret,token)
+    url = facebook_long_token_url.format(
+        facebook_client_id, facebook_client_secret, token)
     facebook_long_response = requests.get(url)
     long_token = facebook_long_response.json()['access_token']
     print('-------Facebook Page Long Token DONE-------')
@@ -216,40 +235,68 @@ def facebook_get_long_token(token):
 
 # * Facebook Post Functions
 
-def facebook_upload(img,token,id):
-    url=facebook_photo_upload_url.format(id)
-    facebook_upload_body={
-                'url':img,
-                'published':'false',
-                'access_token':token
-                }
-    facebook_image_response= requests.post(url,data=facebook_upload_body)
-    id=facebook_image_response.json().get('id','')
-    print(f'-------{facebook_image_response.text}-------')
+
+def facebook_upload(img, token, id):
+    url = facebook_photo_upload_url.format(id)
+    facebook_upload_body = {
+        'url': img,
+        'published': 'false',
+        'access_token': token
+    }
+    facebook_image_response = requests.post(url, data=facebook_upload_body)
+    if facebook_image_response.json().get('error', False):
+        print('-------Facebook Post-ERROR-------')
+        print(facebook_image_response.json())
+        return facebook_image_response.json()
+    id = facebook_image_response.json()['id']
     print(f'-------Facebook Image Upload for:{id}-Done-------')
     return id
 
-def post_facebook(text,media,token,page_id):
+
+def post_facebook(text, media, token, page_id):
     """
     This Function Posts the data to Facebook
     """
     # Send POST request to Facebook API
-    url=facebook_request_url.format(page_id)
+    url = facebook_request_url.format(page_id)
     # Facebook Request Payload
     facebook_post_payload = {
         'message': text,
-        'attached_media':json.dumps(media),
+        'attached_media': json.dumps(media),
         'access_token': token
     }
     facebook_resonse = requests.post(url, data=facebook_post_payload)
     if facebook_resonse.json().get('error', False):
         print('-------Facebook Post-ERROR-------')
-        print(facebook_resonse.json()['error'])
-        return facebook_resonse.json()['error']
-    print(f'-------{facebook_resonse.text}-------')
-    facebook_post_id = facebook_resonse.json().get('id','')
+        print(facebook_resonse.json())
+        return facebook_resonse.json()
+    facebook_post_id = facebook_resonse.json()['id']
     print('-------Facebook Post-DONE-------')
     return facebook_post_id
+
+
+def post_video_facebook(text, video_url, token, page_id):
+    """
+    This Function Posts the video to Facebook
+    """
+    # Send POST request to Facebook API
+    url = facebook_video_upload_url.format(page_id)
+    # Facebook Request Payload
+    facebook_upload_body = {
+        'file_url': video_url,
+        "description": text,
+        "title": text.split(' ')[0]+text.split(' ')[1],
+        'access_token': token
+    }
+    facebook_resonse = requests.post(url, data=facebook_upload_body)
+    if facebook_resonse.json().get('error', False):
+        print('-------Facebook Post-ERROR-------')
+        print(facebook_resonse.json())
+        return facebook_resonse.json()
+    facebook_post_id = facebook_resonse.json()['id']
+    print('-------Facebook Post-DONE-------')
+    return facebook_post_id
+
 
 # ! Unused
 
@@ -276,14 +323,15 @@ def instagram_get_username(id, token):
         token: Access Token
     """
     print("---Getting Instagram Username---------")
-    url=instagram_user_name_url.format(id,token)
+    url = instagram_user_name_url.format(id, token)
     instagram_username_response = requests.get(url)
     print("---Instagram Username Found---------")
     return instagram_username_response.json().get('username', '')
 
 # * Instagram Post Functions
 
-def instagram_media_post(id,image_url,text,token,is_multiple=False):
+
+def instagram_media_post(id, image_url, text, token, is_multiple=False):
     """
     This Function uploads the image to Instagram
     """
@@ -296,61 +344,105 @@ def instagram_media_post(id,image_url,text,token,is_multiple=False):
     }
     if is_multiple:
         instagram_media_payload = {
-        'image_url': image_url,
-        'caption':text,
-        'is_carousel_item':'true',
-        'access_token': token
+            'image_url': image_url,
+            'caption': text,
+            'is_carousel_item': 'true',
+            'access_token': token
         }
-    print(instagram_media_payload)
-    url=instagram_media_request_url.format(id)
+    url = instagram_media_request_url.format(id)
     instagram_media_response = requests.post(url, data=instagram_media_payload)
-    print(f'-------{instagram_media_response.text}--------')
-    instagram_creation_id = instagram_media_response.json().get('id','')
-    print(f'-------Image Upload Instagram for:{instagram_creation_id}-DONE-------')
+    if instagram_media_response.json().get('error', False):
+        print('-------Instagram Post-ERROR-------')
+        print(instagram_media_response.json())
+        return instagram_media_response.json()
+    instagram_creation_id = instagram_media_response.json()['id']
+    print(
+        f'-------Image Upload Instagram for:{instagram_creation_id}-DONE-------')
     return instagram_creation_id
 
 
-def instagram_carousel_post(id,medias,text,token):
+def instagram_carousel_post(id, medias, text, token):
     """
     This Function uploads the carousel to Instagram
     """
     # Send POST request to media url
     # Request payload for Instagram media request
     instagram_carousel_payload = {
-    'media_type': 'CAROUSEL',
-    'caption':text,
-    'children':','.join(medias),
-    'access_token': token
+        'media_type': 'CAROUSEL',
+        'caption': text,
+        'children': ','.join(medias),
+        'access_token': token
     }
-    url=instagram_media_request_url.format(id)
-    instagram_media_response = requests.post(url, data=instagram_carousel_payload)
+    url = instagram_media_request_url.format(id)
+    instagram_media_response = requests.post(
+        url, data=instagram_carousel_payload)
+    if instagram_media_response.json().get('error', False):
+        print('-------Instagram Post-ERROR-------')
+        print(instagram_media_response.json())
+        return instagram_media_response.json()
     instagram_carousel_id = instagram_media_response.json()['id']
     print('-------Carousel Upload Instagram-DONE-------')
     return instagram_carousel_id
 
 
-def post_instagram(id,creation_id,token):
+def instagram_video_post(id, video_url, text, token):
+    """
+    This Function uploads the video to Instagram
+    checks for the status of video processing then returns the video id
+    """
+    # Send POST request to media url
+    # Request payload for Instagram media request
+    instagram_video_payload = {
+        "media_type": "VIDEO",
+        'video_url': video_url,
+        'caption': text,
+        'access_token': token
+    }
+    url = instagram_media_request_url.format(id)
+    instagram_video_response = requests.post(
+        url, data=instagram_video_payload)
+    if instagram_video_response.json().get('error', False):
+        print('-------Instagram Post-ERROR-------')
+        print(instagram_video_response.json())
+        return instagram_video_response.json()
+    while not isPosted:
+        sleep(5)
+        print('-------Instagram Checking Video Status-------')
+        instagram_status_url = instagram_status_url.format(
+            instagram_video_id, token)
+        instagram_status_response = requests.get(instagram_status_url)
+        if instagram_status_response.json().get('status_code', False) == 'FINISHED':
+            isPosted = True
+    instagram_video_id = instagram_video_response.json()['id']
+    print('-------Video Upload Instagram-DONE-------')
+    return instagram_video_id
+
+
+def post_instagram(id, creation_id, token):
     """
     This Function Posts the data to Instagram
     it uses the creation_id returned from instagram_media_post to attach image
     """
-    url=instagram_publish_url.format(id)
+    url = instagram_publish_url.format(id)
     # Payload for Instagram publish request
     instagram_publish_payload = {
         'creation_id': creation_id,
         'access_token': token
     }
-    print(instagram_publish_payload)
-    instagram_publish_response = requests.post(url, data=instagram_publish_payload)
+    instagram_publish_response = requests.post(
+        url, data=instagram_publish_payload)
     if instagram_publish_response.json().get('error', False):
         print('-------Instagram Post-ERROR-------')
-        print(instagram_publish_response.json()['error'])
-        return instagram_publish_response.json()['error']
-    instagram_post_id = instagram_publish_response.json().get('id','')
+        print(instagram_publish_response.json())
+        return instagram_publish_response.json()
+
+    instagram_post_id = instagram_publish_response.json()['id']
     print('-------Instagram Post-DONE-------')
     return instagram_post_id
 
 #  ! Unused
+
+
 def linkedin_get_code(code):
     """
     This Function Recieves the linkedin_code and then saves it
@@ -362,7 +454,7 @@ def linkedin_get_code(code):
 
 
 #  * Used
-def linkedin_authenticate(code):
+def linkedin_authenticate(code, redirect_url):
     """
     This Function Uses the code and then gets the access token
     """
@@ -370,17 +462,18 @@ def linkedin_authenticate(code):
     linkedin_auth_body = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": linkedin_redirect_url,
+        "redirect_uri": redirect_url,
         "client_id": linkedin_client_id,
         "client_secret": linkedin_client_secret,
     }
-    linkedin_token_response = requests.post(linkedin_token_url, data=linkedin_auth_body)
+    linkedin_token_response = requests.post(
+        linkedin_token_url, data=linkedin_auth_body)
     linkedin_access_token = linkedin_token_response.json()["access_token"]
     linkedin_headers = {
-           'Authorization': f'Bearer {linkedin_access_token}'
-           }
+        'Authorization': f'Bearer {linkedin_access_token}'
+    }
     print('-------LinkedIn Authentication-DONE-------')
-    return {'token':linkedin_access_token,'headers':linkedin_headers}
+    return {'token': linkedin_access_token, 'headers': linkedin_headers}
 
 
 def linkedin_get_id(headers):
@@ -388,13 +481,19 @@ def linkedin_get_id(headers):
     This Function Gets LinkedIn Profile ID
     """
     linkedin_me_response = requests.get(linkedin_me_url, headers=headers)
-    linkedin_profile_id = linkedin_me_response.json().get('id','')
-    linkedin_name = f"{linkedin_me_response.json().get('localizedFirstName','')} {linkedin_me_response.json().get('localizedLastName','')}"
+    if linkedin_me_response.json().get('serviceErrorCode', False) or linkedin_me_response.json().get('status', False) or linkedin_me_response.json().get('message', False):
+        print('-------Linkedin Post-ERROR-------')
+        print(linkedin_me_response.json())
+        return linkedin_me_response.json()
+    linkedin_profile_id = linkedin_me_response.json()['id']
+    linkedin_name = f"{linkedin_me_response.json()['localizedFirstName']} {linkedin_me_response.json()['localizedLastName']}"
     print('-------LinkedIn Profile ID-DONE-------')
-    return {'name':linkedin_name,'id':linkedin_profile_id}
+    return {'name': linkedin_name, 'id': linkedin_profile_id}
 
 # * Linkedin Post Functions
-def linkedin_register(header,id):
+
+
+def linkedin_register(header, id):
     """
     This Function calls the register API from LinkedIn to get asset_id and upload_url
     """
@@ -414,26 +513,30 @@ def linkedin_register(header,id):
             ]
         }
     }
-    linkedin_register_response = requests.post(linkedin_register_url, headers=header, json=linkedin_register_body)
-    print(f'-------{linkedin_register_response.text}-------')
+    linkedin_register_response = requests.post(
+        linkedin_register_url, headers=header, json=linkedin_register_body)
+    if linkedin_register_response.json().get('serviceErrorCode', False) or linkedin_register_response.json().get('status', False) or linkedin_register_response.json().get('message', False):
+        print('-------Linkedin Post-ERROR-------')
+        print(linkedin_register_response.json())
+        return linkedin_register_response.json()
     linkedin_upload_url = linkedin_register_response.json(
-    ).get('value',{}).get('uploadMechanism',{}).get('com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest',{}).get('uploadUrl','https://api.linkedin.com/mediaUpload/C4D22AQHmuwR-oOFX8w/feedshare-uploadedImage/0?ca=vector_feedshare&cn=uploads&m=AQKjo12KXx0k1wAAAYL9k20HP72Hehu3fOkoAN5pQEed3u_QAcoluu_AFuI&app=205167785&sync=0&v=beta&ut=3PMMyt6pFBIGo1')
-    linkedin_asset_id = linkedin_register_response.json().get('value',{}).get('asset','')
+    )['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
+    linkedin_asset_id = linkedin_register_response.json()['value']['asset']
     print(f'-------LinkedIn Register for:{linkedin_asset_id}-DONE-------')
-    return {'url':linkedin_upload_url,'asset':linkedin_asset_id}
+    return {'url': linkedin_upload_url, 'asset': linkedin_asset_id}
 
 
-def linkedin_upload_image(url,header,path):
+def linkedin_upload_image(url, header, path):
     """
     This Function uploads the image to LinkedIn using the upload_url returned by linkedin_register
     """
     linkedin_image = open(path, 'rb')
-    linkedin_upload_response = requests.put(url, data=linkedin_image, headers=header)
-    print(f'-------{linkedin_upload_response.text}-------')
+    linkedin_upload_response = requests.put(
+        url, data=linkedin_image, headers=header)
     print('-------Image Upload LinkedIn-DONE-------')
 
 
-def post_linkedin(id,header,medias,text):
+def post_linkedin(id, header, medias, text):
     """
     This Function posts the data to LinkedIn 
     It uses the asset_id returned by linkedin_register to attach image
@@ -455,42 +558,49 @@ def post_linkedin(id,header,medias,text):
             "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
         }
     }
-    linkedin_post_response = requests.post(linkedin_url, headers=header, json=linkedin_post_data)
-    print(f'-------{linkedin_post_response.text}-------')
-    linkedin_post_id = linkedin_post_response.json().get('id','')
+    linkedin_post_response = requests.post(
+        linkedin_url, headers=header, json=linkedin_post_data)
+    if linkedin_post_response.json().get('serviceErrorCode', False) or linkedin_post_response.json().get('status', False) or linkedin_post_response.json().get('message', False):
+        print('-------Linkedin Post-ERROR-------')
+        print(linkedin_post_response.json())
+        return linkedin_post_response.json()
+    linkedin_post_id = linkedin_post_response.json()['id']
     print('-------LinkedIn Post-DONE-------')
     return linkedin_post_id
 
+# ? Authenticate Functions
 
-def authenticate_linkedin(code):
+
+def authenticate_linkedin(code, redirect_url):
     """
     This Function calls necessary functions to Authenticate with LinkedIn
     """
-    resp=linkedin_authenticate(code)
+    resp = linkedin_authenticate(code, redirect_url)
     resp.update(linkedin_get_id(resp['headers']))
     return resp
 
 
-def authenticate_facebook(code):
+def authenticate_facebook(code, redirect_url):
     """
     This Function calls necessary functions to Authenticate on Facebook
     """
-    token=facebook_get_user_auth(code)
-    resp=facebook_get_user_id(token)
-    return {'credentials':facebook_page_auth(resp['id'],token),'name':resp['name']}
+    token = facebook_get_user_auth(code, redirect_url)
+    resp = facebook_get_user_id(token)
+    return {'credentials': facebook_page_auth(resp['id'], token), 'name': resp['name'], 'userToken': token}
 
 
-def authenticate_instagram(credentials):
+def authenticate_instagram(credentials, userToken):
     """
     This Function calls necessary functions to Authenticate on Instagram
     """
     instagram_credentials = []
     for credential in credentials:
-        url=instagram_user_url.format(credential['page_id'], credential['access_token'])
+        url = instagram_user_url.format(
+            credential['page_id'], credential['access_token'])
         instagram_user_id_response = requests.get(url)
         if instagram_user_id_response.json().get('instagram_business_account'):
             user_creds = {
-                'access_token': credential['access_token'],
+                'access_token': userToken,
                 'user_id': instagram_user_id_response.json()['instagram_business_account']['id'],
                 'user_name': instagram_get_username(instagram_user_id_response.json()['instagram_business_account']['id'], credential['access_token'])
             }
@@ -498,30 +608,55 @@ def authenticate_instagram(credentials):
     print("---Instagram Authentication Is Done-----------")
     return instagram_credentials
 
+# ? Post Functions
 
-def make_post_facebook(description,urls,token,page_id):
+
+def make_post_facebook(description, urls, token, page_id, isVideo):
     """
     This Function calls necessary functions to make a Facebook post
     """
-    medias=[{'media_fbid':facebook_upload(url,token,page_id)} for url in urls]
-    post_id=post_facebook(description,medias,token,page_id)
+    if isVideo:
+        post_id = post_video_facebook(description, urls[0], token, page_id)
+    else:
+        medias = [{'media_fbid': facebook_upload(
+            url, token, page_id)} for url in urls]
+        for media in medias:
+            if type(media['media_fbid']) == dict:
+                return {'message': media['media_fbid'].get('error', {}).get('message', 'Some Error Occured')}
+        post_id = post_facebook(description, medias, token, page_id)
+    if type(post_id) == dict:
+        return {'message': post_id.get('error', {}).get('message', 'Some Error Occured')}
     return post_id
 
 
-def make_post_instagram(description,urls,token,user_id):
+def make_post_instagram(description, urls, token, user_id, isVideo):
     """
     This Function calls necessary functions to make a Instagram post
     """
-    if len(urls)<2:
-        creation_id=instagram_media_post(user_id,urls,description,token)
+    if isVideo:
+        creation_id = instagram_video_post(
+            user_id, urls[0], description, token)
+    elif len(urls) < 2:
+        creation_id = instagram_media_post(user_id, urls, description, token)
+        if type(creation_id) == dict:
+            return {'message': creation_id.get('error', {}).get('message', 'Some Error Occured')}
     else:
-        medias=[instagram_media_post(user_id,url,description,token,True)for url in urls]
-        creation_id=instagram_carousel_post(user_id,medias,description,token)
-    instagram_post_id = post_instagram(user_id,creation_id,token)
+        medias = [instagram_media_post(
+            user_id, url, description, token, True)for url in urls]
+        for media in medias:
+            if media.get('error', False):
+                return {'message': media.get('error', {}).get('message', 'Some Error Occured')}
+        creation_id = instagram_carousel_post(
+            user_id, medias, description, token)
+        if type(creation_id) == dict:
+            return {'message': creation_id.get('error', {}).get('message', 'Some Error Occured')}
+    instagram_post_id = post_instagram(user_id, creation_id, token)
+    if type(instagram_post_id) == dict:
+        return {'message': instagram_post_id.get('error', {}).get('message', 'Some Error Occured')}
     return instagram_post_id
 
 
-def make_post_linkedin(token, description, paths):
+def make_post_linkedin(token, description, paths, isVideo):
     """
     This Function calls necessary functions to make a LinkedIn post
     """
@@ -529,36 +664,43 @@ def make_post_linkedin(token, description, paths):
     headers = {
         'Authorization': f'Bearer {token}'
     }
-    idresp=linkedin_get_id(headers)
-    medias=[]
+    idresp = linkedin_get_id(headers)
+    if idresp.get('message', False):
+        return {'message': idresp.get('message', 'Some Error Occured')}
+    if isVideo:
+        return "Sorry, Can not post videos to LinkedIn"
+    medias = []
     for path in paths:
-        
-        reg_resp=linkedin_register(headers,idresp['id'])
-        linkedin_upload_image(reg_resp['url'],headers,path)
-        media={
-                    "status": "READY",
-                    "description": {
-                        "text": post_text
-                    },
-                    "media": reg_resp['asset'],
-                    "title": {
-                        "text": post_text
-                    }
-                }
+        reg_resp = linkedin_register(headers, idresp['id'])
+        if reg_resp.get('serviceErrorCode', False) or reg_resp.get('status', False) or reg_resp.get('message', False):
+            return {'message': reg_resp.get('message', 'Some Error Occured')}
+        linkedin_upload_image(reg_resp['url'], headers, path)
+        media = {
+            "status": "READY",
+            "description": {
+                "text": post_text
+            },
+            "media": reg_resp['asset'],
+            "title": {
+                "text": post_text
+            }
+        }
         medias.append(media)
-    post_id=post_linkedin(idresp['id'],headers,medias,description)
+    post_id = post_linkedin(idresp['id'], headers, medias, description)
+    if type(post_id) == dict:
+        return {'message': post_id.get('message', 'Some Error Occured')}
     return f"{idresp['id']}_{post_id}"
 
 
 #  ? Outer Functions
 # * Post Functions
-def make_linkedin_post(linkedinToken, description, paths):   
+def make_linkedin_post(linkedinToken, description, paths, isVideo=False):
     """
     This Function Calls the other linkedin functions to make post
     """
-    id=''
-    if(not(len(linkedinToken) == 0)):
-        id=make_post_linkedin(linkedinToken, description, paths)
+    id = ''
+    if (not (len(linkedinToken) == 0)):
+        id = make_post_linkedin(linkedinToken, description, paths, isVideo)
     else:
         return
     print("---LinkedIn Post Is Done-----------")
@@ -567,13 +709,14 @@ def make_linkedin_post(linkedinToken, description, paths):
     return id
 
 
-def make_facebook_posts(description,urls,token,page_id):
+def make_facebook_posts(description, urls, token, page_id, isVideo=False):
     """
     This Function Calls the other facebook functions to make post
     """
-    post_id=''
-    if(not(len(token) == 0)):
-        post_id=make_post_facebook(description,urls,token,page_id)
+    post_id = ''
+    if (not (len(token) == 0)):
+        post_id = make_post_facebook(
+            description, urls, token, page_id, isVideo)
     else:
         return
     print("---Facebook Post Is Done-----------")
@@ -582,12 +725,13 @@ def make_facebook_posts(description,urls,token,page_id):
     return f'{post_id}'
 
 
-def make_instagram_posts(description,urls,token,user_id):
+def make_instagram_posts(description, urls, token, user_id, isVideo=False):
     """
     This Function Calls the other instagram functions to make post
     """
-    if(not(len(token) == 0)):
-        instagram_post_id = make_post_instagram(description,urls,token,user_id)
+    if (not (len(token) == 0)):
+        instagram_post_id = make_post_instagram(
+            description, urls, token, user_id, isVideo)
     else:
         return
     print("---Instagram Post Is Done-----------")
@@ -597,24 +741,29 @@ def make_instagram_posts(description,urls,token,user_id):
 
 # * Authentication Function
 
-def authenticate_social(linkedinCode, facebookCode):
+
+def authenticate_social(linkedinCode, facebookCode, RedirectEndPoint):
     """
     This Function Calls functions to authenticate users
     Args:
         linkedinCode (string): LinkedIn Authentication Token Generated Using OAuth
         facebookCode (string): Facebook Authentication Token Generated Using OAuth
     """
+    redirect_url = updateEndpoint(RedirectEndPoint)
     facebook_credentials = {}
     instagram_credentials = []
     linkedin_credentials = {}
-    if not(len(linkedinCode) == 0):
-        linkedin_credentials=authenticate_linkedin(linkedinCode)
-    if not(len(facebookCode) == 0):
-        facebook_credentials = authenticate_facebook(facebookCode)
+    if not (len(linkedinCode) == 0):
+        linkedin_credentials = authenticate_linkedin(
+            linkedinCode, redirect_url)
+    if not (len(facebookCode) == 0):
+        facebook_credentials = authenticate_facebook(
+            facebookCode, redirect_url)
     if len(facebook_credentials) > 0:
-        instagram_credentials = authenticate_instagram(facebook_credentials['credentials'])
+        instagram_credentials = authenticate_instagram(
+            facebook_credentials['credentials'], facebook_credentials['userToken'])
     print("--------Social Authentication Is Done-----------")
-    return {'linkedin_access_token': linkedin_credentials.get('token',''), 'linkedin_profile_id': linkedin_credentials.get('id',''), 'linkedin_name':linkedin_credentials.get('name',''), 'facebook_name': facebook_credentials.get('name',''), 'facebook_credentials': facebook_credentials.get('credentials',''), 'instagram_credentials': instagram_credentials}
+    return {'linkedin_access_token': linkedin_credentials.get('token', ''), 'linkedin_profile_id': linkedin_credentials.get('id', ''), 'linkedin_name': linkedin_credentials.get('name', ''), 'facebook_name': facebook_credentials.get('name', ''), 'facebook_credentials': facebook_credentials.get('credentials', ''), 'instagram_credentials': instagram_credentials}
 
 
 # * Insights Functions

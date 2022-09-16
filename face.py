@@ -2,8 +2,9 @@ import requests
 
 # !!! FOR THIS WE NEED TO GET THE APP APROOVED
 
-facebook_client_id = '1413167462458195'
-facebook_client_secret = '7dc4593de12dfb15e973ff9ef2528f5e'
+facebook_client_id = '651883032773236'
+# LinkedIn CLient Secret
+facebook_client_secret = '95ddc60f72d27b8cf31a5cac74de32dd'
 facebook_redirect_url = 'https://onepost.sasone.in/linked-accounts/facebook/'
 
 # ! NEEDED PERMISSIONS
@@ -16,7 +17,7 @@ facebook_redirect_url = 'https://onepost.sasone.in/linked-accounts/facebook/'
 # ? pages_read_user_content
 # ? pages_show_list
 # ? pages_manage_posts
-facebook_scope = 'public_profile,email,pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_manage_posts,pages_read_user_content'
+facebook_scope = 'public_profile,email,pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_manage_posts,pages_read_user_content,publish_video'
 
 facebook_auth_url = f'https://www.facebook.com/v14.0/dialog/oauth?response_type&client_id={facebook_client_id}&redirect_uri={facebook_redirect_url}&scope={facebook_scope}&response_type=code&state=987654321&mode=facebook'
 
