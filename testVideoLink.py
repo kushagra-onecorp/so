@@ -31,7 +31,7 @@ linkedin_register_body = {
 print('-------------------LinkedinRegisterBody')
 print(linkedin_register_body)
 print('-------------------LinkedinRegisterBody')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 linkedin_headers = {
     'Authorization': f'Bearer {linkedin_access_token}',
 }
@@ -41,7 +41,7 @@ linkedin_register_response = requests.post(
 print('-------------------LinkedinRegisterResponse')
 print(linkedin_register_response.json())
 print('-------------------LinkedinRegisterResponse')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 linkedin_upload_url = linkedin_register_response.json(
 )['value']['uploadInstructions'][0]['uploadUrl']
 linkedin_headers = {
@@ -52,16 +52,16 @@ linkedin_upload_response = requests.put(
 print('-------------------LinkedinUploadResponseHeader:')
 print(linkedin_upload_response.headers['ETag'])
 print('-------------------LinkedinUploadResponseHeader:')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 linkedin_asset_id = linkedin_register_response.json()['value']['video']
 print('-------------------LinkedinAssestID')
 print(linkedin_asset_id)
 print('-------------------LinkedinAssestID')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 print('-------------------LinkedinUploadResponse')
 print(linkedin_upload_response.text)
 print('-------------------LinkedinUploadResponse')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 linkedin_post_data = {
     "finalizeUploadRequest": {
         "video": linkedin_asset_id,
@@ -72,7 +72,7 @@ linkedin_post_data = {
 print('-------------------LinkedinPostData')
 print(linkedin_post_data)
 print('-------------------LinkedinPostData')
-print('-------------------------------------------------------------------')
+print('<------------------------------------------------------------------->')
 linkedin_headers = {
     "Authorization": f"Bearer {linkedin_access_token}",
     "Content-Type": "application/json",
