@@ -49,18 +49,18 @@ linkedin_headers = {
 }
 linkedin_upload_response = requests.put(
     linkedin_upload_url, data=linkedin_upload_image, headers=linkedin_headers)
-print('-------------------LinkedinyUploadResponseHeader:')
+print('-------------------LinkedinUploadResponseHeader:')
 print(linkedin_upload_response.headers['ETag'])
-print('-------------------LinkedinyUploadResponseHeader:')
+print('-------------------LinkedinUploadResponseHeader:')
 print('-------------------------------------------------------------------')
 linkedin_asset_id = linkedin_register_response.json()['value']['video']
-print('-------------------LinkedinyAssestID')
+print('-------------------LinkedinAssestID')
 print(linkedin_asset_id)
-print('-------------------LinkedinyAssestID')
+print('-------------------LinkedinAssestID')
 print('-------------------------------------------------------------------')
-print('-------------------LinkedinyUploadResponse')
+print('-------------------LinkedinUploadResponse')
 print(linkedin_upload_response.text)
-print('-------------------LinkedinyUploadResponse')
+print('-------------------LinkedinUploadResponse')
 print('-------------------------------------------------------------------')
 linkedin_post_data = {
     "finalizeUploadRequest": {
