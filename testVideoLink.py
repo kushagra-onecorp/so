@@ -16,62 +16,74 @@ post_text = f"""
 # LinkedIn Profile ID
 linkedin_profile_id = 'gXaSyTq5Tm'
 #
-video = './videos/test-video-3.mp4'
-linkedin_upload_image = open(video, 'rb')
+video = './videos/test-video-2.mp4'
 linkedin_url = "https://api.linkedin.com/v2/videos?action=finalizeUpload"
 linkedin_register_url = 'https://api.linkedin.com/v2/videos?action=initializeUpload'
 linkedin_register_body = {
     "initializeUploadRequest": {
         "owner": f"urn:li:person:{linkedin_profile_id}",
         "fileSizeBytes": os.path.getsize(video),
+        "purpose": "FEED_VIDEO",
         "uploadCaptions": False,
         "uploadThumbnail": False
     }
 }
-print('-------------------LinkedinRegisterBody')
+print('-------------------LinkedinRegisterBody:')
 print(linkedin_register_body)
-print('-------------------LinkedinRegisterBody')
+print('-------------------LinkedinRegisterBody************')
 print('<------------------------------------------------------------------->')
 linkedin_headers = {
     'Authorization': f'Bearer {linkedin_access_token}',
+    'X-Restli-Protocol-Version': '2.0.0'
 }
 media_ids = []
 linkedin_register_response = requests.post(
     linkedin_register_url, headers=linkedin_headers, json=linkedin_register_body)
-print('-------------------LinkedinRegisterResponse')
+print('-------------------LinkedinRegisterResponse:')
 print(linkedin_register_response.json())
-print('-------------------LinkedinRegisterResponse')
+print('-------------------LinkedinRegisterResponse************')
 print('<------------------------------------------------------------------->')
 linkedin_upload_url = linkedin_register_response.json(
 )['value']['uploadInstructions'][0]['uploadUrl']
+linkedin_upload_token = linkedin_register_response.json(
+)['value']['uploadToken']
 linkedin_headers = {
     'Authorization': f'Bearer {linkedin_access_token}',
+    'Content-Type': 'application/octet-stream',
+    'X-Restli-Protocol-Version': '2.0.0'
 }
-linkedin_upload_response = requests.put(
-    linkedin_upload_url, data=linkedin_upload_image, headers=linkedin_headers)
-print('-------------------LinkedinUploadResponseHeader:')
-print(linkedin_upload_response.headers['ETag'])
-print('-------------------LinkedinUploadResponseHeader:')
+with open(video, 'rb') as linkedin_upload_image:
+    data = linkedin_upload_image.read()
+    linkedin_upload_response = requests.put(
+        linkedin_upload_url, headers=linkedin_headers, data=data)
+print('-------------------LinkedinUploadResponseStatus:')
+print(linkedin_upload_response)
+print('-------------------LinkedinUploadResponseStatus************')
+print('<------------------------------------------------------------------->')
+print('-------------------LinkedinUploadResponseHeaderETag:')
+print(linkedin_upload_response.headers.get('ETag'))
+print('-------------------LinkedinUploadResponseHeaderETagv')
 print('<------------------------------------------------------------------->')
 linkedin_asset_id = linkedin_register_response.json()['value']['video']
-print('-------------------LinkedinAssestID')
+print('-------------------LinkedinAssestID:')
 print(linkedin_asset_id)
-print('-------------------LinkedinAssestID')
+print('-------------------LinkedinAssestID************')
 print('<------------------------------------------------------------------->')
-print('-------------------LinkedinUploadResponse')
+print('-------------------LinkedinUploadResponse:')
 print(linkedin_upload_response.text)
-print('-------------------LinkedinUploadResponse')
+print('-------------------LinkedinUploadResponse************')
 print('<------------------------------------------------------------------->')
 linkedin_post_data = {
     "finalizeUploadRequest": {
         "video": linkedin_asset_id,
-        "uploadToken": "",
+        "uploadToken": linkedin_upload_token,
         "uploadedPartIds": [linkedin_upload_response.headers.get('ETag')]
     }
 }
-print('-------------------LinkedinPostData')
+linkedin_post_data=json.dumps(linkedin_post_data)
+print('-------------------LinkedinPostData:')
 print(linkedin_post_data)
-print('-------------------LinkedinPostData')
+print('-------------------LinkedinPostData************')
 print('<------------------------------------------------------------------->')
 linkedin_headers = {
     "Authorization": f"Bearer {linkedin_access_token}",
@@ -80,6 +92,6 @@ linkedin_headers = {
 }
 linkedin_post_response = requests.post(
     linkedin_url, headers=linkedin_headers, json=json.dumps(linkedin_post_data))
-print('-------------------LinkedinPostResponse')
+print('-------------------LinkedinPostResponse:')
 print(linkedin_post_response.json())
-print('-------------------LinkedinPostResponse')
+print('-------------------LinkedinPostResponse************')
