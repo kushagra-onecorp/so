@@ -1,29 +1,76 @@
-from social import authenticate_social, make_facebook_posts, make_instagram_posts, make_linkedin_post
-def makePosts():
-     # Facebook
-     token="EAALefOGyJXQBAMzYOn9J60TmHylZA02B8YbsZCaxSesYlYrW0fpb0aXtr3sUvc8TZAU2HEijrhcy1UsZBXcVP1ck0EjVEYuHdgnffgvsGuQ06onNqPonnxdBZC3uz0V8LKhEgBn0GEvZBZAIF7BiBBkKLQC2CTx0JXm1ZAeJ4IdwJZBELrnlUdinsrQnP7LOdxG4w0uZCIqEyPdYZBeiVX14eEkWiizH0s9Lb9gDtFZCMwXI2OkyBfcxaeDCZAMXsYgs4O0ZD"
-     description="Test Post Neww"
-     url=['https://wallpaperaccess.com/full/1398213.jpg']
-     page_id='102068252597979'
-
-     # print(make_facebook_posts(description,url,token,page_id))
-
-     # Instagram
-     description="Test Post Neww"
-     page_id='17841416005675720'
-
-     # print(make_instagram_posts(description,url,token,page_id))
+import requests
 
 
-     # Linkedin
-     token="AQUqQKZJxz97WHgCmz_CEckhGv7HTj_3xpQR_5RgS-QdXkt8EV50XboCmXqw_h67adWQgXFFlAzDoA7bp5LjOaD-0JMXJ9xFZoP9aGhRv_MsWhXzFV83R2c8wV2H8cKu9BkgpVEoRqgOzTZi00AyXyjGWNjuuZGy6fhMKkCYp2vdJ2q3ifgS5vT22LlkjU2Gk78lyf6sqKHFbV8sXOpu3CB1DdRxWNKqMle87IHATeO4b4faGDmlCIgzlwlCOnxT1XV02orBPPvEJFk7XyI9o4sne-ITmqkbZ7Ji0kiATqbm0wiKbQHA5yWS_D-7pj3WCabaqIrZLYNJNDrSUjq90QLpexZdWg"
-     url=['./images/social.png']
+def splice_array_with_content(
+    array, count): return array[len(array)-count:len(array)]
 
-     print(make_linkedin_post(token,description,url))
-     
-def Authenticate():
-     codeFB=input('FBCode:')
-     codeLink=input('LinkedinCode:')
-     print(authenticate_social(codeLink,codeFB))
-     
-Authenticate()
+def facebook_get_all_posts(credential, page=1, content=10):
+    url = f"""https://graph.facebook.com/v14.0/{credential['PageId']}/feed"""
+    params = {
+        "fields": "permalink_url,full_picture,message",
+        "access_token": credential['SocialMediaAccessToken'],
+        "limit": f'{content}',
+        "offset": f'{page-1}'
+    }
+    posts_response = requests.get(url, params=params)
+    all_posts = posts_response.json()['data']
+    all_posts = splice_array_with_content(all_posts, content)
+    print('--Got Facebook Posts--------')
+    return all_posts
+
+
+
+def instagram_get_all_posts(credential, page=1, content=10):
+    url = f"""https://graph.facebook.com/v14.0/{credential['PageId']}/media"""
+    params = {
+        "fields": "media_url,caption,timestamp,permalink,like_count,comments_count",
+        "access_token": credential['SocialMediaAccessToken'],
+        "limit": f'{page*content}',
+    }
+    posts_response = requests.get(url, params=params)
+    all_posts = posts_response.json()['data']
+    all_posts = splice_array_with_content(all_posts, content)
+    print("---Instagram Posts Found---------")
+    return all_posts
+
+
+def linkedin_get_all_posts(credential, start=1, count=10):
+    all_posts = []
+    url = f"https://api.linkedin.com/v2/posts?"
+    headers = {
+        'Authorization': f'Bearer {credential["SocialMediaAccessToken"]}'
+    }
+    params = {
+        "author": f"urn:li:organization:{credential['PageId']}",
+        "isDsc": "false",
+        "q": "author",
+        "count": f"{count}",
+        "start": f"{start-1}"
+    }
+    posts_response = requests.get(url, params=params, headers=headers)
+    all_posts = posts_response.json().get('elements', {})
+    print('--Got LinkedIn Posts--------')
+    return all_posts
+
+
+def linkedin_get_post_detials(id, token):
+    id = f"urn:li:share:{id}"
+    url = f"https://api.linkedin.com/v2/posts/{id}"
+
+    header = {
+        'Authorization': f'Bearer {token}'
+    }
+    onePost_Response = requests.get(url, headers=header)
+    print('--Got LinkedIn Post Detials--------')
+    return onePost_Response.json()
+
+
+def linkedin_get_post_link(
+    post_id): return f'https://www.linkedin.com/feed/update/urn:li:share:{post_id}'
+
+
+credential = {
+    "PageId": "103995469037355",
+    "SocialMediaAccessToken": "EAAJQ4liagnQBADuZCXBrYEbI0KBCDryY3bn6cAXJlSRtZBqTEXr2KZCBc6S7QaFmU0wpeDrhH1V8lYQSCWe2PnyFx0FdxwNXDrj215Pugog6ZA0NdtXhn7F1ZAwL2pk82vMFWyaZB73NxJ63b2nzOG5t58jEQx6XLjb7rS7VjygyFEGZB47ixFRyuqaa5OW7ZCcPz2bPmy9sFV58kmK6qD236Js2A8Epb9U3M5jjMYOktKqMrv4cWqHX"
+}
+print(linkedin_get_post_link('6942490014932967424'))

@@ -1,0 +1,79 @@
+{
+    "SameAccountFaceBook": {
+        "error": {
+            "message": "Invalid parameter",
+            "type": "OAuthException",
+            "code": "100",
+            "error_subcode": "1366051",
+            "is_transient": "False",
+            "error_user_title": "Already Posted",
+            "error_user_msg": "These photos were already posted.",
+            "fbtrace_id": "AoVB1euqRIfBBbooKr57MK9"
+        }
+    },
+    "DifferentAccountFaceBook": {
+        "error": {
+            "message": "(#100) Invalid parameter",
+            "type": "OAuthException",
+            "code": "100",
+            "fbtrace_id": "Aev59EZKJQewB1JATIOSSkm"
+        }
+    },
+    "SameAccountInstagramMedia": {
+        "error": {
+            "message": "Fatal",
+            "type": "OAuthException",
+            "code": "-1",
+            "error_subcode": "2207032",
+            "is_transient": "False",
+            "error_user_title": "Cannot create media",
+            "error_user_msg": "Create media fail, please try to re-create media",
+            "fbtrace_id": "AFI2EB9vOQZ_Jt3iByJj1bu"
+        }
+    },
+    "SameAccountInstagramCarousel": {
+        "error": {
+            "message": "Fatal",
+            "type": "OAuthException",
+            "code": "-1",
+            "error_subcode": "2207032",
+            "is_transient": "False",
+            "error_user_title": "Cannot create media",
+            "error_user_msg": "Create media fail, please try to re-create media",
+            "fbtrace_id": "AT7mIOMo57gn1992wf5FUfm"
+        }
+    },
+    "DifferentAccountInstagram": {},
+    "DifferentAccountLinkedIn": {
+        "errorDetailType": "com.linkedin.common.error.BadRequest",
+        "message": "com.linkedin.content.common.exception.BadRequestResponseException: Submitter is not authorized to apply operation CREATE on post authored by another member",
+        "errorDetails": {
+            "inputErrors": [
+                {
+                    "description": "The user is not authorized to perform the action",
+                    "input": {
+                        "value": {
+                            "stringValue": "CREATE"
+                        }
+                    },
+                    "code": "UNAUTHORIZED_MEMBER_ACTION"
+                }
+            ]
+        },
+        "status": "401"
+    },
+    "SameAccountLinkedIn": {
+        "errorDetailType": "com.linkedin.common.error.BadRequest",
+        "message": "com.linkedin.content.common.exception.BadRequestResponseException: Content is a duplicate of urn:li:share:6977948144747597824",
+        "errorDetails": {
+            "inputErrors": [
+                {
+                    "description": "Duplicate post is detected",
+                    "input": {},
+                    "code": "DUPLICATE_POST"
+                }
+            ]
+        },
+        "status": "422"
+    }
+}

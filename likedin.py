@@ -1,7 +1,8 @@
 import requests
 
 # Access Token from LinkedIn API
-linkedin_access_token= """AQUqQKZJxz97WHgCmz_CEckhGv7HTj_3xpQR_5RgS-QdXkt8EV50XboCmXqw_h67adWQgXFFlAzDoA7bp5LjOaD-0JMXJ9xFZoP9aGhRv_MsWhXzFV83R2c8wV2H8cKu9BkgpVEoRqgOzTZi00AyXyjGWNjuuZGy6fhMKkCYp2vdJ2q3ifgS5vT22LlkjU2Gk78lyf6sqKHFbV8sXOpu3CB1DdRxWNKqMle87IHATeO4b4faGDmlCIgzlwlCOnxT1XV02orBPPvEJFk7XyI9o4sne-ITmqkbZ7Ji0kiATqbm0wiKbQHA5yWS_D-7pj3WCabaqIrZLYNJNDrSUjq90QLpexZdWg"""
+linkedin_access_token= """AQWzYto687fM0l2nv8AxJA82d9GXCegbvv7H5c-6ONkFSoYVhu6WoXPfUVIKeoRc0mgYDa7kv6TzizKwPTHq1TnNpvUXUV2q863M422UCCdM-vkI2zlfaREMGjmVuU_jznVJuSpwB5L5xUMaCIwTKBRgTfETZitQg_Fu_kqbBQlM6Zgas9sU7BdNArmoEDfPp6Gba8U4M5ucnIS1fAH9-W7z5_3JiWHQ3pnDa2ChkuB518iMGg9B8muYq-akM-6JL4ZEnmA5jUh_S0PPdApAE-O62---daiWRmq_nr36ek_55ClZ0sDAeU-nM82PIywbwXYXFaboK81k3n9E-s7Ko-HWsVVMHA"""
+# linkedin_access_token= """AQUXgjoc2xhG-he6aXfg1pkalPUAeOIZcRTCRW8mXuTjvPvAMljLfTvs10vB_c6wObKZg8IAVUY3CNZLpZ_OLpYtXEP3JCdcgENBehJecsBbnp7EN_Z7YxNsWiUagwHnFxGBdBOlANW_qMj0EwL6cshe00izXsJbbhjLCD7VvDExQNhayU-K7ROJKalcwIGv65gIi7cq8UMMX_HtJVlTMS1_wVv0WVYZyzkdF5O6yjqEzQSLa_2mKT3o88o7EJrqCRDpEgwcFMIBY0OMXWLt7PhRQSeezt02B9Dr1Galt4kyuxM5gmhreII16Kyf_ghrcso3JvFBhQhjOiXnTD__xZanhY5TTw"""
 # Post Title
 post_title='Post Title'
 # Post Description
@@ -16,13 +17,13 @@ linkedin_profile_id='gXaSyTq5Tm'
 # 
 linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 linkedin_register_url='https://api.linkedin.com/v2/assets?action=registerUpload'
-images_url=['./images/post_image.jpg']
+images_url=['./images/post_image.jpg','./images/astrolight.jpg','./images/KIWI.jpg']
 linkedin_register_body={
     "registerUploadRequest": {
         "recipes": [
             "urn:li:digitalmediaRecipe:feedshare-image"
         ],
-        "owner": f"urn:li:person:{linkedin_profile_id}",
+        "owner": 'urn:li:organization:82596640',
         "serviceRelationships": [
             {
                 "relationshipType": "OWNER",
@@ -65,7 +66,7 @@ for id in media_ids:
     print(medias)
 
 linkedin_post_data = {
-    "author": f"urn:li:person:{linkedin_profile_id}",
+    "author": 'urn:li:organization:82596640',
     "lifecycleState": "PUBLISHED",
     "specificContent": {
         "com.linkedin.ugc.ShareContent": {

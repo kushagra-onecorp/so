@@ -1,11 +1,11 @@
 import requests
 
-linkedin_client_id = '78l55cr29sl11s'
-linkedin_client_secret = 'gR78hqshNl4dimkc'
+linkedin_client_id = '775gacntogd1of'
+linkedin_client_secret = '1SoIlDzDyXk48egX'
 
 redirect_url = 'https://onepost.sasone.in/linked-accounts/linkedin/'
 
-linkedin_scope = 'r_emailaddress,r_liteprofile,w_member_social'
+linkedin_scope = 'r_emailaddress,r_liteprofile,w_member_social,r_organization_admin,rw_organization_admin,w_organization_social'
 
 linkedin_auth_url = f'https://www.linkedin.com/oauth/v2/authorization?response_type=code&state=987654321&scope={linkedin_scope}&client_id={linkedin_client_id}&redirect_uri={redirect_url}'
 print(linkedin_auth_url)

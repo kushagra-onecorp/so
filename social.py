@@ -22,7 +22,7 @@ linkedin_redirect_url = f'{BASE_REDIRECT_URL}/linkedin/'
 # common redirect URL
 redirect_url = f'{BASE_REDIRECT_URL}/{""}/'
 # LinkedIn Permission Scopes
-linkedin_scopes = 'r_emailaddress,r_liteprofile,w_member_social'
+linkedin_scopes = 'r_emailaddress,r_liteprofile,w_member_social,r_organization_admin,rw_organization_admin,w_organization_social'
 # Facebook Permission Scopes
 facebook_scopes = 'read_insights,public_profile,email,pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_manage_posts,pages_read_user_content'
 
@@ -112,6 +112,8 @@ linkedin_auth_url = 'https://www.linkedin.com/oauth/v2/authorization?response_ty
 linkedin_token_url = "https://www.linkedin.com/oauth/v2/accessToken"
 # LinkedIn URL to get account info
 linkedin_me_url = "https://api.linkedin.com/v2/me"
+# LinkedIn URL to get rganizations info
+linkedin_org_url = 'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(*,organization~(localizedName)))'
 # LinkedIn API URL to Post
 linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 # LinkedIn API URL to Register Media
@@ -285,16 +287,16 @@ def post_video_facebook(text, video_url, token, page_id):
     facebook_upload_body = {
         'file_url': video_url,
         "description": text,
-        "title": text.split(' ')[0]+text.split(' ')[1],
+        "title": text,
         'access_token': token
     }
     facebook_resonse = requests.post(url, data=facebook_upload_body)
     if facebook_resonse.json().get('error', False):
-        print('-------Facebook Post-ERROR-------')
+        print('-------Facebook Video Post-ERROR-------')
         print(facebook_resonse.json())
         return facebook_resonse.json()
     facebook_post_id = facebook_resonse.json()['id']
-    print('-------Facebook Post-DONE-------')
+    print('-------Facebook Video Post-DONE-------')
     return facebook_post_id
 
 
@@ -405,15 +407,16 @@ def instagram_video_post(id, video_url, text, token):
         print('-------Instagram Post-ERROR-------')
         print(instagram_video_response.json())
         return instagram_video_response.json()
+    instagram_video_id = instagram_video_response.json()['id']
+    isPosted = False
     while not isPosted:
         sleep(5)
         print('-------Instagram Checking Video Status-------')
-        instagram_status_url = instagram_status_url.format(
+        url = instagram_status_url.format(
             instagram_video_id, token)
-        instagram_status_response = requests.get(instagram_status_url)
+        instagram_status_response = requests.get(url)
         if instagram_status_response.json().get('status_code', False) == 'FINISHED':
             isPosted = True
-    instagram_video_id = instagram_video_response.json()['id']
     print('-------Video Upload Instagram-DONE-------')
     return instagram_video_id
 
@@ -488,7 +491,23 @@ def linkedin_get_id(headers):
     linkedin_profile_id = linkedin_me_response.json()['id']
     linkedin_name = f"{linkedin_me_response.json()['localizedFirstName']} {linkedin_me_response.json()['localizedLastName']}"
     print('-------LinkedIn Profile ID-DONE-------')
-    return {'name': linkedin_name, 'id': linkedin_profile_id}
+    return {'name': linkedin_name, 'id': linkedin_profile_id,"type":"linkedin"}
+
+def linkedin_get_orgs(headers,uid,name,token):
+    uid=f'urn:li:person:{uid}'
+    resp = requests.get(linkedin_org_url, headers=headers)
+    organizations=[]
+    print(resp.text)
+    for page in resp.json().get('elements', []):
+        if page.get('role', False) in ["ADMINISTRATOR","DIRECT_SPONSORED_CONTENT_POSTER"] and page.get('state', False) == "APPROVED" and page.get('roleAssignee', False) == uid:
+            organizationID=page.get('organization').split(':')[-1]
+            organizationName=page.get('organization~').get('localizedName')
+            organization={"type":"linkedinorg","id":organizationID,"uname":name,"orgname":organizationName,"token":token}
+            organizations.append(organization)
+            print(f'-------LinkedIn Organization: {organizationName} ID: {organizationID}-DONE-------')
+    print('-------LinkedIn Organizations-DONE-------')
+    return organizations
+
 
 # * Linkedin Post Functions
 
@@ -577,7 +596,9 @@ def authenticate_linkedin(code, redirect_url):
     """
     resp = linkedin_authenticate(code, redirect_url)
     resp.update(linkedin_get_id(resp['headers']))
-    return resp
+    resp2 = linkedin_get_orgs(resp['headers'],resp['id'],resp['name'],resp['token'])
+    resp2.append(resp)
+    return resp2
 
 
 def authenticate_facebook(code, redirect_url):
@@ -756,6 +777,8 @@ def authenticate_social(linkedinCode, facebookCode, RedirectEndPoint):
     if not (len(linkedinCode) == 0):
         linkedin_credentials = authenticate_linkedin(
             linkedinCode, redirect_url)
+        if not linkedin_credentials:
+            linkedin_credentials = {}
     if not (len(facebookCode) == 0):
         facebook_credentials = authenticate_facebook(
             facebookCode, redirect_url)
@@ -763,7 +786,7 @@ def authenticate_social(linkedinCode, facebookCode, RedirectEndPoint):
         instagram_credentials = authenticate_instagram(
             facebook_credentials['credentials'], facebook_credentials['userToken'])
     print("--------Social Authentication Is Done-----------")
-    return {'linkedin_access_token': linkedin_credentials.get('token', ''), 'linkedin_profile_id': linkedin_credentials.get('id', ''), 'linkedin_name': linkedin_credentials.get('name', ''), 'facebook_name': facebook_credentials.get('name', ''), 'facebook_credentials': facebook_credentials.get('credentials', ''), 'instagram_credentials': instagram_credentials}
+    return {'linkedin_credentials': linkedin_credentials, 'facebook_name': facebook_credentials.get('name', ''), 'facebook_credentials': facebook_credentials.get('credentials', ''), 'instagram_credentials': instagram_credentials}
 
 
 # * Insights Functions
