@@ -2,9 +2,9 @@ import requests
 
 # !!! FOR THIS WE NEED TO GET THE APP APROOVED
 
-facebook_client_id = '651883032773236'
-# LinkedIn CLient Secret
-facebook_client_secret = '95ddc60f72d27b8cf31a5cac74de32dd'
+facebook_client_id = '807577897280884'
+# FaceBook CLient Secret
+facebook_client_secret = 'e4d86fb35a7e3161bda20250a19cc995'
 facebook_redirect_url = 'https://onepost.sasone.in/linked-accounts/facebook/'
 
 # ! NEEDED PERMISSIONS
@@ -55,10 +55,11 @@ print('Response Page Token')
 print(facebook_page_response.json())
 print('-------------------------------------')
 
+facebook_page_access_token = ''
 if len(facebook_page_response.json()['data']) > 0:
     facebook_page_access_token = facebook_page_response.json()[
-        'data'][0]['access_token']
-
+        'data'][1]['access_token']
+page_id = ''
 if facebook_page_access_token:
     facebook_page_id_payload = {
         'access_token': facebook_page_access_token
@@ -68,6 +69,10 @@ if facebook_page_access_token:
     page_id = facebook_page_id_response.json()['id']
     print('Response Page ID')
     print(page_id)
+    print('-------------------------------------')
+    image_resp=requests.get("https://graph.facebook.com/v15.0/{}/picture/?access_token={}&type=normal&redirect=false".format(page_id,facebook_page_access_token))
+    print('Image')
+    print(image_resp.json())
     print('-------------------------------------')
 
 facebook_long_token_url = f'https://graph.facebook.com/v14.0/oauth/access_token?grant_type=fb_exchange_token&client_id={facebook_client_id}&client_secret={facebook_client_secret}&fb_exchange_token={facebook_page_access_token}'
@@ -85,7 +90,7 @@ instagram_user_id_response = requests.get(
 print('*****IG USer', instagram_user_id_response.text)
 print('*****IG USer', instagram_user_id_response.json())
 user_id = instagram_user_id_response.json()['instagram_business_account']['id']
-user_name_url = 'https://graph.facebook.com/v14.0/{}?access_token={}&fields=id,media_count,username'
+user_name_url = 'https://graph.facebook.com/v15.0/{}?access_token={}&fields=id,media_count,username,profile_picture_url'
 instagram_username_response = requests.get(
     user_name_url.format(user_id, facebook_page_access_token))
 print("**********iguser resp", instagram_username_response.text)

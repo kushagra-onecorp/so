@@ -2,6 +2,8 @@ import json
 from time import sleep
 import requests
 
+from socialpost.helper import splice_array_with_content
+
 # APP DETAILS
 # FaceBook CLient ID
 facebook_client_id = '807577897280884'
@@ -22,7 +24,7 @@ linkedin_redirect_url = f'{BASE_REDIRECT_URL}/linkedin/'
 # common redirect URL
 redirect_url = f'{BASE_REDIRECT_URL}/{""}/'
 # LinkedIn Permission Scopes
-linkedin_scopes = 'r_emailaddress,r_liteprofile,w_member_social,r_organization_admin,rw_organization_admin,w_organization_social'
+linkedin_scopes = 'r_emailaddress,r_liteprofile,w_member_social,r_organization_admin,rw_organization_admin,r_organization_social,w_organization_social'
 # Facebook Permission Scopes
 facebook_scopes = 'read_insights,public_profile,email,pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_read_engagement,pages_manage_posts,pages_read_user_content'
 
@@ -417,7 +419,45 @@ def instagram_video_post(id, video_url, text, token):
         instagram_status_response = requests.get(url)
         if instagram_status_response.json().get('status_code', False) == 'FINISHED':
             isPosted = True
+        if instagram_status_response.json().get('status_code', False) == 'ERROR':
+            return {'message': 'Oops, Some Error Occured during video processing'}
     print('-------Video Upload Instagram-DONE-------')
+    return instagram_video_id
+
+
+def instagram_reel_post(id, video_url, text, token):
+    """
+    This Function uploads the Reel to Instagram
+    checks for the status of video processing then returns the video id
+    """
+    # Send POST request to media url
+    # Request payload for Instagram media request
+    instagram_video_payload = {
+        "media_type": "REELS",
+        'video_url': video_url,
+        'caption': text,
+        'access_token': token
+    }
+    url = instagram_media_request_url.format(id)
+    instagram_video_response = requests.post(
+        url, data=instagram_video_payload)
+    if instagram_video_response.json().get('error', False):
+        print('-------Instagram Post-ERROR-------')
+        print(instagram_video_response.json())
+        return instagram_video_response.json()
+    instagram_video_id = instagram_video_response.json()['id']
+    isPosted = False
+    while not isPosted:
+        sleep(5)
+        print('-------Instagram Checking Reel Status-------')
+        url = instagram_status_url.format(
+            instagram_video_id, token)
+        instagram_status_response = requests.get(url)
+        if instagram_status_response.json().get('status_code', False) == 'FINISHED':
+            isPosted = True
+        if instagram_status_response.json().get('status_code', False) == 'ERROR':
+            return {'message': 'Oops, Some Error Occured during reel processing'}
+    print('-------Reel Upload Instagram-DONE-------')
     return instagram_video_id
 
 
@@ -491,20 +531,23 @@ def linkedin_get_id(headers):
     linkedin_profile_id = linkedin_me_response.json()['id']
     linkedin_name = f"{linkedin_me_response.json()['localizedFirstName']} {linkedin_me_response.json()['localizedLastName']}"
     print('-------LinkedIn Profile ID-DONE-------')
-    return {'name': linkedin_name, 'id': linkedin_profile_id,"type":"linkedin"}
+    return {'uname': linkedin_name, 'id': linkedin_profile_id, "type": "linkedin"}
 
-def linkedin_get_orgs(headers,uid,name,token):
-    uid=f'urn:li:person:{uid}'
+
+def linkedin_get_orgs(headers, uid, name, token):
+    uid = f'urn:li:person:{uid}'
     resp = requests.get(linkedin_org_url, headers=headers)
-    organizations=[]
+    organizations = []
     print(resp.text)
     for page in resp.json().get('elements', []):
-        if page.get('role', False) in ["ADMINISTRATOR","DIRECT_SPONSORED_CONTENT_POSTER"] and page.get('state', False) == "APPROVED" and page.get('roleAssignee', False) == uid:
-            organizationID=page.get('organization').split(':')[-1]
-            organizationName=page.get('organization~').get('localizedName')
-            organization={"type":"linkedinorg","id":organizationID,"uname":name,"orgname":organizationName,"token":token}
+        if page.get('role', False) in ["ADMINISTRATOR", "DIRECT_SPONSORED_CONTENT_POSTER", "CONTENT_ADMIN"] and page.get('state', False) == "APPROVED" and page.get('roleAssignee', False) == uid:
+            organizationID = page.get('organization').split(':')[-1]
+            organizationName = page.get('organization~').get('localizedName')
+            organization = {"type": "linkedinorg", "id": organizationID,
+                            "uname": name, "orgname": organizationName, "token": token}
             organizations.append(organization)
-            print(f'-------LinkedIn Organization: {organizationName} ID: {organizationID}-DONE-------')
+            print(
+                f'-------LinkedIn Organization: {organizationName} ID: {organizationID}-DONE-------')
     print('-------LinkedIn Organizations-DONE-------')
     return organizations
 
@@ -523,7 +566,7 @@ def linkedin_register(header, id):
             "recipes": [
                 "urn:li:digitalmediaRecipe:feedshare-image"
             ],
-            "owner": f"urn:li:person:{id}",
+            "owner": id,
             "serviceRelationships": [
                 {
                     "relationshipType": "OWNER",
@@ -562,7 +605,7 @@ def post_linkedin(id, header, medias, text):
     """
     # Request payload for LinkedIn Post
     linkedin_post_data = {
-        "author": f"urn:li:person:{id}",
+        "author": id,
         "lifecycleState": "PUBLISHED",
         "specificContent": {
             "com.linkedin.ugc.ShareContent": {
@@ -596,7 +639,8 @@ def authenticate_linkedin(code, redirect_url):
     """
     resp = linkedin_authenticate(code, redirect_url)
     resp.update(linkedin_get_id(resp['headers']))
-    resp2 = linkedin_get_orgs(resp['headers'],resp['id'],resp['name'],resp['token'])
+    resp2 = linkedin_get_orgs(
+        resp['headers'], resp['id'], resp['uname'], resp['token'])
     resp2.append(resp)
     return resp2
 
@@ -650,13 +694,20 @@ def make_post_facebook(description, urls, token, page_id, isVideo):
     return post_id
 
 
-def make_post_instagram(description, urls, token, user_id, isVideo):
+def make_post_instagram(description, urls, token, user_id, isVideo, isReel):
     """
     This Function calls necessary functions to make a Instagram post
     """
-    if isVideo:
+    if isReel:
+        creation_id = instagram_reel_post(
+            user_id, urls[0], description, token)
+        if type(creation_id) == dict:
+            return {'message': creation_id.get('message', 'Some Error Occured')}
+    elif isVideo:
         creation_id = instagram_video_post(
             user_id, urls[0], description, token)
+        if type(creation_id) == dict:
+            return {'message': creation_id.get('message', 'Some Error Occured')}
     elif len(urls) < 2:
         creation_id = instagram_media_post(user_id, urls, description, token)
         if type(creation_id) == dict:
@@ -677,7 +728,7 @@ def make_post_instagram(description, urls, token, user_id, isVideo):
     return instagram_post_id
 
 
-def make_post_linkedin(token, description, paths, isVideo):
+def make_post_linkedin(token, description, paths, uid, isVideo):
     """
     This Function calls necessary functions to make a LinkedIn post
     """
@@ -685,14 +736,11 @@ def make_post_linkedin(token, description, paths, isVideo):
     headers = {
         'Authorization': f'Bearer {token}'
     }
-    idresp = linkedin_get_id(headers)
-    if idresp.get('message', False):
-        return {'message': idresp.get('message', 'Some Error Occured')}
     if isVideo:
         return "Sorry, Can not post videos to LinkedIn"
     medias = []
     for path in paths:
-        reg_resp = linkedin_register(headers, idresp['id'])
+        reg_resp = linkedin_register(headers, uid)
         if reg_resp.get('serviceErrorCode', False) or reg_resp.get('status', False) or reg_resp.get('message', False):
             return {'message': reg_resp.get('message', 'Some Error Occured')}
         linkedin_upload_image(reg_resp['url'], headers, path)
@@ -707,21 +755,22 @@ def make_post_linkedin(token, description, paths, isVideo):
             }
         }
         medias.append(media)
-    post_id = post_linkedin(idresp['id'], headers, medias, description)
+    post_id = post_linkedin(uid, headers, medias, description)
     if type(post_id) == dict:
         return {'message': post_id.get('message', 'Some Error Occured')}
-    return f"{idresp['id']}_{post_id}"
+    return f"{uid.split(':')[-1]}_{post_id}"
 
 
 #  ? Outer Functions
 # * Post Functions
-def make_linkedin_post(linkedinToken, description, paths, isVideo=False):
+def make_linkedin_post(linkedinToken, description, paths, uid, isVideo=False):
     """
     This Function Calls the other linkedin functions to make post
     """
     id = ''
     if (not (len(linkedinToken) == 0)):
-        id = make_post_linkedin(linkedinToken, description, paths, isVideo)
+        id = make_post_linkedin(
+            linkedinToken, description, paths, uid, isVideo)
     else:
         return
     print("---LinkedIn Post Is Done-----------")
@@ -746,13 +795,13 @@ def make_facebook_posts(description, urls, token, page_id, isVideo=False):
     return f'{post_id}'
 
 
-def make_instagram_posts(description, urls, token, user_id, isVideo=False):
+def make_instagram_posts(description, urls, token, user_id, isVideo=False, isReel=False):
     """
     This Function Calls the other instagram functions to make post
     """
     if (not (len(token) == 0)):
         instagram_post_id = make_post_instagram(
-            description, urls, token, user_id, isVideo)
+            description, urls, token, user_id, isVideo, isReel)
     else:
         return
     print("---Instagram Post Is Done-----------")
@@ -794,34 +843,99 @@ def authenticate_social(linkedinCode, facebookCode, RedirectEndPoint):
 # * All Posts
 
 
-def facebook_get_all_posts(credential):
-    all_facebook_posts = []
-    posts_response = {}
-    url = f"""https://graph.facebook.com/v14.0/{credential['PageId']}/feed?access_token={credential['SocialMediaAccessToken']}"""
-    posts_response = requests.get(url)
-    all_facebook_posts = posts_response.json()['data']
-    while posts_response.json().get('paging', False).get('next', False):
-        posts_response = requests.get(posts_response.json()['paging']['next'])
-        all_facebook_posts = all_facebook_posts + posts_response.json()['data']
+def facebook_get_all_posts(credential, page=1, content=10):
+    """
+    This function Gets All the posts for the provided Page.
+    *args
+    credential(dict):credentials of the page[id&token]
+    page(int,optional):page number
+    content(int,optional):page content
+    """
+    url = f"""https://graph.facebook.com/v14.0/{credential['PageId']}/feed"""
+    params = {
+        "fields": "permalink_url,full_picture,message",
+        "access_token": credential['SocialMediaAccessToken'],
+        "limit": f'{content}',
+        "offset": f'{page-1}'
+    }
+    posts_response = requests.get(url, params=params)
+    if posts_response.json().get('error', False):
+        print('-------Facebook Post-ERROR-------')
+        print(posts_response.json())
+        return posts_response.json()
+    all_posts = posts_response.json()['data']
+    all_posts = splice_array_with_content(all_posts, content)
     print('--Got Facebook Posts--------')
-    return all_facebook_posts
+    return all_posts
 
 
-def instagram_get_all_posts(credentials):
-    all_instagram_posts = []
-    posts_response = {}
-    url = f"""https://graph.facebook.com/v14.0/{credentials['PageId']}?access_token={credentials['SocialMediaAccessToken']}&fields=id,media_count,username,media"""
-    posts_response = requests.get(url)
-    all_instagram_posts = posts_response.json()['media']['data']
-    posts_response = posts_response.json().get('media')
-    while posts_response.get('paging', False).get('next', False):
-        posts_response = requests.get(posts_response['paging']['next']).json()
-        all_instagram_posts = all_instagram_posts + posts_response['data']
+def instagram_get_all_posts(credential, page=1, content=10):
+    """
+    This function Gets All the posts for the provided Page.
+    *args
+    credential(dict):credentials of the page[id&token]
+    page(int,optional):page number
+    content(int,optional):page content
+    """
+    url = f"""https://graph.facebook.com/v14.0/{credential['PageId']}/media"""
+    params = {
+        "fields": "media_url,caption,timestamp,permalink,like_count,comments_count",
+        "access_token": credential['SocialMediaAccessToken'],
+        "limit": f'{page*content}',
+    }
+    posts_response = requests.get(url, params=params)
+    if posts_response.json().get('error', False):
+        print('-------Instagram Post-ERROR-------')
+        print(posts_response.json())
+        return posts_response.json()
+    all_posts = posts_response.json()['data']
+    all_posts = splice_array_with_content(all_posts, content)
     print("---Instagram Posts Found---------")
-    return all_instagram_posts
+    return all_posts
 
+
+def linkedin_get_all_posts(credential, start=1, count=10):
+    """
+    This function Gets All the posts for the provided Page.
+    *args
+    credential(dict):credentials of the page[id&token]
+    page(int,optional):page number
+    content(int,optional):page content
+    """
+    all_posts = []
+    url = f"https://api.linkedin.com/v2/posts?"
+    headers = {
+        'Authorization': f'Bearer {credential["SocialMediaAccessToken"]}'
+    }
+    params = {
+        "author": f"urn:li:organization:{credential['PageId']}",
+        "isDsc": "false",
+        "q": "author",
+        "count": f"{count}",
+        "start": f"{start-1}"
+    }
+    posts_response = requests.get(url, params=params, headers=headers)
+    if posts_response.json().get('serviceErrorCode', False) or posts_response.json().get('status', False) or posts_response.json().get('message', False):
+        print('-------Linkedin Post-ERROR-------')
+        print(posts_response.json())
+        return posts_response.json()
+    all_posts = posts_response.json().get('elements', {})
+    for post in all_posts:
+        post.update({"permalink": linkedin_get_post_link(
+            post.get('id').split(':')[-1])})
+    print('--Got LinkedIn Posts--------')
+    return all_posts
+
+
+# * Post Details
 
 def facebook_get_post_details(token, id):
+    """
+    This Function Gets the detials of the Post by Post ID
+    *args
+    token:authentication token
+    id:page/user ID
+    """
     url = f"""https://graph.facebook.com/v14.0/{id}?access_token={token}&fields=permalink_url,full_picture,message"""
     posts_response = requests.get(url)
     details = posts_response.json()
@@ -837,6 +951,12 @@ def facebook_get_post_details(token, id):
 
 
 def instagram_get_post_details(token, id):
+    """
+    This Function Gets the detials of the Post by Post ID
+    *args
+    token:authentication token
+    id:page/user ID
+    """
     url = f"""https://graph.facebook.com/v14.0/{id}/?access_token={token}&fields=media_url,caption,timestamp,permalink,like_count,comments_count"""
     posts_response = requests.get(url)
     print(url)
@@ -852,6 +972,30 @@ def instagram_get_post_details(token, id):
     print("---Facebook Post Detials Found---------")
     return details
 
+
+def linkedin_get_post_detials(id, token):
+    """
+    This Function Gets the detials of the Post by Post ID
+    *args
+    token:authentication token
+    id:page/user ID
+    """
+    id = f"urn:li:share:{id}"
+    url = f"https://api.linkedin.com/v2/posts/{id}"
+
+    header = {
+        'Authorization': f'Bearer {token}'
+    }
+    onePost_Response = requests.get(url, headers=header)
+    print('--Got LinkedIn Post Detials--------')
+    return onePost_Response.json()
+
+
+def linkedin_get_post_link(
+    post_id): return f'https://www.linkedin.com/feed/update/urn:li:share:{post_id}'
+
+
+# * Page Insights
 
 def facebook_get_page_insights(token, id):
     url = f"""https://graph.facebook.com/v14.0/{id}/insights?metric=page_engaged_users,page_posts_impressions,page_post_engagements&access_token={token}&period=lifetime"""

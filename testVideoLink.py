@@ -3,7 +3,7 @@ import os
 import requests
 
 # Access Token from LinkedIn API
-linkedin_access_token = """AQUELXsoelp_FvnaNZp8zKQ1dywAbRM4BEwSfJX9SKk4j927k58cw7P7uNfymGWMBhhym4fqCSkwRRtTZdQTTlpSmu5IftwMvvGfIr-lmyAO97b2RRsR8e5GhH2MFt3AkWfLqx8Lg8ZOQbpFZelsLtKYPrABP8C9aumDAT_7qSx4nOf-hi4dWymAdM7X8OOmQGsmzD9VXJCy4kK2ghvi5-IuCoEgJsLqBvOn3bXpz6x-7duoxBZQOalbz-z9XyqDnoA6Zgu-eBC_uRwLvAIRzNmq9-DrXI4sW5wfZv3RCM9FQPdyUKI5fPgvGC38wapoEfIJUBHBY98-lGvob-jdH4E_Uxveww"""
+linkedin_access_token = """AQXSdnLGN4Z_3ykhLaSKOs1-8omRqXnOAHW-d4jHlzF_kU-DNFcYJHwm9phFpZRBLF-p-_jsBMbURdVRVj0EYFbxjrMyOCUmTkiBxa8iPfGm0JGYwa062oCQS8ve7h8h-NkzudRA_Onqh_mY3DvaVBAolHZ1sJVQ8s9PF3BEPgRMr7MVzEZ3_6s8-cvSIXtUrDKWQNmIFnp2OQ-hwJJdbUXMxHzgsgkUuZr62paHrdsx_H6TdJonfX05EYXPnt6A9YHettCT10ZESsfIHgL6xAvt4IE-U9j3sa0oyt9dHbKCX_DEVGTB9hCJUIqD0nLWxY1uh1EP5xkylLkRL9Udz85gbCRsEQ"""
 # Post Title
 post_title = 'Post Title'
 # Post Description
@@ -73,16 +73,16 @@ print('-------------------LinkedinUploadResponse:')
 print(linkedin_upload_response.text)
 print('-------------------LinkedinUploadResponse************')
 print('<------------------------------------------------------------------->')
-linkedin_post_data = {
+data = {
     "finalizeUploadRequest": {
         "video": linkedin_asset_id,
-        "uploadToken": linkedin_upload_token,
+        "uploadToken": "",
         "uploadedPartIds": [linkedin_upload_response.headers.get('ETag')]
+        }
     }
-}
-linkedin_post_data=json.dumps(linkedin_post_data)
+# linkedin_post_data=json.dumps(linkedin_post_data)
 print('-------------------LinkedinPostData:')
-print(linkedin_post_data)
+print(data)
 print('-------------------LinkedinPostData************')
 print('<------------------------------------------------------------------->')
 linkedin_headers = {
@@ -91,7 +91,7 @@ linkedin_headers = {
     "X-Restli-Protocol-Version": "2.0.0"
 }
 linkedin_post_response = requests.post(
-    linkedin_url, headers=linkedin_headers, json=json.dumps(linkedin_post_data))
+    linkedin_url, headers=linkedin_headers, data=json.dumps(data))
 print('-------------------LinkedinPostResponse:')
 print(linkedin_post_response.json())
 print('-------------------LinkedinPostResponse************')

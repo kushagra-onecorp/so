@@ -2,11 +2,11 @@ from time import sleep
 import requests
 
 # Access Token from Facebook Graph API
-instragram_access_token = "EAAJQ4liagnQBAIX22t66vAErZBZCXGZClXTyMpkiLqG3OTTW2ZAbxbNJZCWCVf1wZAeLA87DHCYVBsT5Uwuz4LKvMivz0LeQVEg2biH8KoTYUSbP1adieqsQmErsDqZBf801V9uy6SflgpAjM83dMjeYuyN4mnGZBNoRFh6fEuejLfLMdgN2zZAbcvnjqyctzDoWIosqxTJcMd8bK7en6OVRkpJVlLE2nZByeI3fnZCEW3GewZDZD"
+instragram_access_token = "EAALefOGyJXQBAANLbwAH4xYogRUE9ty9cYqy6JKvXTX8y3wzZAVsQucI4S4OA9QIZCSlHfSNL3sRSRp1fOwkHuMIlBc2hZAvBSxmHpcQjD1pRkESY1p6drhAtOe2SLbb1Ppo8fZBjwyLbCNZB1WN6u0XwRZBiuNeX7pKSiKn3JrdxWAq73Y2rNPdqBrchAO515QLZAy1bmebV4t28rlMoaaekXIxTn3txwXZCjsskRGPkAZDZD"
 # Instagram User ID
 instagram_user_id = '17841453883347404'
 # URL of the image to post
-video_url = 'https://promote.onecorp.co.in/media/test-video-2.mp4'
+video_url = 'https://promote.onecorp.co.in/media/test-video.mp4'
 # Post Title
 post_title = 'Post Title'
 # Post Description
@@ -48,4 +48,6 @@ while not isPosted:
         instagram_publish_response = requests.post(
             instagram_publish_url, data=instagram_publish_payload)
         print(instagram_publish_response.json())
+        isPosted=True
+    if instagram_publish_response.json().get('status_code',False) == 'ERROR':
         isPosted=True
