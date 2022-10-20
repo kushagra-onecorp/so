@@ -2,9 +2,9 @@ import requests
 
 # !!! FOR THIS WE NEED TO GET THE APP APROOVED
 
-facebook_client_id = '807577897280884'
+facebook_client_id = '651883032773236'
 # FaceBook CLient Secret
-facebook_client_secret = 'e4d86fb35a7e3161bda20250a19cc995'
+facebook_client_secret = '95ddc60f72d27b8cf31a5cac74de32dd'
 facebook_redirect_url = 'https://onepost.sasone.in/linked-accounts/facebook/'
 
 # ! NEEDED PERMISSIONS
