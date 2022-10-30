@@ -31,3 +31,9 @@ print(linkedin_me_response.json()['localizedFirstName'])
 print(linkedin_me_response.json()['localizedLastName'])
 linkedin_profile_id = linkedin_me_response.json()['id']
 print(linkedin_profile_id)
+linkedin_profile_image_url = "https://api.linkedin.com/v2/me?projection=(profilePicture(displayImage~:playableStreams))"
+linkedin_me_response = requests.get(
+    linkedin_profile_image_url, headers=linkedin_headers)
+linkedin_profile_image = linkedin_me_response.json(
+)['profilePicture']['displayImage~']['elements'][-1]['identifiers'][0]['identifier']
+print(linkedin_profile_image)

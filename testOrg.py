@@ -1,7 +1,7 @@
 import requests
 
 
-linkedin_access_token = """AQWzYto687fM0l2nv8AxJA82d9GXCegbvv7H5c-6ONkFSoYVhu6WoXPfUVIKeoRc0mgYDa7kv6TzizKwPTHq1TnNpvUXUV2q863M422UCCdM-vkI2zlfaREMGjmVuU_jznVJuSpwB5L5xUMaCIwTKBRgTfETZitQg_Fu_kqbBQlM6Zgas9sU7BdNArmoEDfPp6Gba8U4M5ucnIS1fAH9-W7z5_3JiWHQ3pnDa2ChkuB518iMGg9B8muYq-akM-6JL4ZEnmA5jUh_S0PPdApAE-O62---daiWRmq_nr36ek_55ClZ0sDAeU-nM82PIywbwXYXFaboK81k3n9E-s7Ko-HWsVVMHA"""
+linkedin_access_token = """AQVyIPmv23iKRnpJdNfe2iKCsoqP2GBlXYVZyWYe-0Cr0R0SlmqsEZDMFgwdyrxoXpX2P8biLRp-P0bz7AJEFUe8Xncggbf6Ay3NvTVbj5ChK6hZe68OUG5SoHmMjX5dtKp3qtC4_y_pbHuToX7sZ8YHdAC6Y5zw_mjoOeaEjfqVEEv1KYbuY_6GXolAg6UkB0Nj3BBqldDPr0LPAryJjcy32oD9mFW_Mc5oed2IThqa3QJL-uqGIhinFBnRj7Wf8WDmP5BOl8VXvPsifJHbqBj_hbH6YCljXTfBjUERMNzF17rPQUxDR7qdAVS2Yz3UgITE2KQZWIabuwjJ5L4a5Gj2gHbl3A"""
 
 
 linkedin_headers = {
@@ -16,14 +16,17 @@ linkedin_profile_id = f"urn:li:person:{linkedin_me_response.json()['id']}"
 print(linkedin_profile_id)
 
 
-orgUrl = 'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(*,organization~(localizedName)))'
+orgUrl = 'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&projection=(elements*(*,organization~(localizedName),organization~(logoV2(original~:playableStreams))))'
 
 resp = requests.get(orgUrl, headers=linkedin_headers)
 print(resp.json())
-organizationID=''
+organizationID = ''
 for page in resp.json().get('elements', []):
-    if page.get('role', False) in ["ADMINISTRATOR","DIRECT_SPONSORED_CONTENT_POSTER"] and page.get('state', False) == "APPROVED" and page.get('roleAssignee', False) == linkedin_profile_id:
-        organizationID=page.get('organization').split(':')[-1]
-        organizationName=page.get('organization~').get('localizedName')
+    if page.get('role', False) in ["ADMINISTRATOR", "DIRECT_SPONSORED_CONTENT_POSTER"] and page.get('state', False) == "APPROVED" and page.get('roleAssignee', False) == linkedin_profile_id:
+        organizationID = page.get('organization').split(':')[-1]
+        organizationName = page.get('organization~').get('localizedName')
+        organizationImage = page.get('organization~').get(
+            'logoV2')['original~']['elements'][-1]['identifiers'][0]['identifier']
         print(organizationID)
+        print(organizationImage)
         print(organizationName)
