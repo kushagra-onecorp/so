@@ -47,6 +47,8 @@ if response.json().get('error',False):
     print(response.json())
     exit()
 
+print('Response::>>', response.text)
+print('Response::>>', response.json())
 twitter_access_token = response.json().get('access_token', '')
 print('Acces Token::>>', twitter_access_token)
 
