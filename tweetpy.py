@@ -38,7 +38,7 @@ print(auth.get_authorization_url(signin_with_twitter=True))
 oauth_verifier = input("Enter OAuth Verifier: ")
 
 twitter_access_token,twitter_access_secret = auth.get_access_token(oauth_verifier)
-
+    
 api = tweepy.API(auth)
 
 print(api.update_status_with_media(status='Hello Tweepy',filename='post_image.jpg',file='./images/post_image.jpg'))

@@ -16,33 +16,19 @@ def encode_base_64(string):
 twitter_client_id = 'cXFQbG1nQWkybmhrRkFzM25MTzg6MTpjaQ'
 twitter_client_secret = 'jMkuH3RssjI_KUVRDKRWK2gA2gEmDK_ALmP_NTtarYQXSqZmtR'
 
+refresh_token = input("Enter Twitter Auth Refresh Token:")
 
-redirect_url = 'https://onepost.sasone.in/linked-accounts/twitter/'
-
-twitter_scope = 'tweet.read,tweet.write,users.read,offline.access'
-
-state = 'f'
-
-
-url = """
-https://twitter.com/i/oauth2/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}&state={}&code_challenge=challenge&code_challenge_method=plain
-"""
-
-print(url.format(twitter_client_id, redirect_url, url_encode(twitter_scope), state))
-
-code = input("Enter Twitter Auth Code:")
-
-twitter_access_token_url = "https://api.twitter.com/2/oauth2/token?grant_type=authorization_code&client_id={}&redirect_uri={}&code_verifier=challenge&code={}"
+twitter_refresh_access_token_url = "https://api.twitter.com/2/oauth2/token?grant_type=refresh_token&client_id={}&refresh_token={}"
 
 headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Authorization': f'Basic {encode_base_64( f"{twitter_client_id}:{twitter_client_secret}")}'
 }
 
-response = requests.post(twitter_access_token_url.format(
-    twitter_client_id, redirect_url, code), headers=headers)
+response = requests.post(twitter_refresh_access_token_url.format(
+    twitter_client_id, refresh_token), headers=headers)
 
-if response.json().get('error',False):
+if response.json().get('error', False):
     print("Error:>>")
     print(response.json())
     exit()
@@ -60,11 +46,11 @@ params = {
 twitter_me_url = 'https://api.twitter.com/2/users/me'
 response = requests.get(twitter_me_url, params=params, headers=header)
 # print(response.json())
-profile_image=response.json().get('data','').get('profile_image_url','')
-page_name=response.json().get('data','').get('username','')
-name=response.json().get('data','').get('name','')
-page_id=response.json().get('data','').get('id','')
-print("Profile Image::>>",profile_image)
-print("Page ID::>>",page_id)
-print("Page Name::>>",page_name)
-print("Name::>>",name)
+profile_image = response.json().get('data', '').get('profile_image_url', '')
+page_name = response.json().get('data', '').get('username', '')
+name = response.json().get('data', '').get('name', '')
+page_id = response.json().get('data', '').get('id', '')
+print("Profile Image::>>", profile_image)
+print("Page ID::>>", page_id)
+print("Page Name::>>", page_name)
+print("Name::>>", name)
