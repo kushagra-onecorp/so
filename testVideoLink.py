@@ -3,7 +3,7 @@ import os
 import requests
 
 # Access Token from LinkedIn API
-linkedin_access_token = """AQXSdnLGN4Z_3ykhLaSKOs1-8omRqXnOAHW-d4jHlzF_kU-DNFcYJHwm9phFpZRBLF-p-_jsBMbURdVRVj0EYFbxjrMyOCUmTkiBxa8iPfGm0JGYwa062oCQS8ve7h8h-NkzudRA_Onqh_mY3DvaVBAolHZ1sJVQ8s9PF3BEPgRMr7MVzEZ3_6s8-cvSIXtUrDKWQNmIFnp2OQ-hwJJdbUXMxHzgsgkUuZr62paHrdsx_H6TdJonfX05EYXPnt6A9YHettCT10ZESsfIHgL6xAvt4IE-U9j3sa0oyt9dHbKCX_DEVGTB9hCJUIqD0nLWxY1uh1EP5xkylLkRL9Udz85gbCRsEQ"""
+linkedin_access_token = """AQXXi-OtP2vmDU5s1hDPafx5ywKFY5uEg3MzPazm8vAEMH5nKbTTTXLzYMSxzMqIDj9Way2XWtFW2s3iNMvAudIS-Ya_hD0OyTZBQlUv6JlYhFzwPh4assPVK3rbW--CHwkij8Kc2wroBooNhsMeliOQQyBeELKngQrmAiRKIbCLzIL4CxGPYmV4kYLRh4tDDO6UV64OwAze4-9s-NMw3AK8d6d2pmJWQufKm-LPRbBNi1O2pF_1cQ4ikatMKHxSRp48ncoBw8YuZrSr--Mn3QkluTPoXGs2B3Uu4F5vfA8zbUIY3HX4neD_rgg3-j37a_e3o6851bt2SFnlWQ26GJHqSeW7NQ"""
 # Post Title
 post_title = 'Post Title'
 # Post Description
@@ -14,9 +14,10 @@ post_text = f"""
 {post_description}
 """
 # LinkedIn Profile ID
-linkedin_profile_id = 'gXaSyTq5Tm'
+linkedin_profile_id = 'iyflcZ2ma3'
 #
 video = './videos/test-video-2.mp4'
+linkedin_post_url = "https://api.linkedin.com/v2/posts"
 linkedin_url = "https://api.linkedin.com/v2/videos?action=finalizeUpload"
 linkedin_register_url = 'https://api.linkedin.com/v2/videos?action=initializeUpload'
 linkedin_register_body = {
@@ -73,13 +74,14 @@ print('-------------------LinkedinUploadResponse:')
 print(linkedin_upload_response.text)
 print('-------------------LinkedinUploadResponse************')
 print('<------------------------------------------------------------------->')
-data = {
+data = json.dumps({
     "finalizeUploadRequest": {
         "video": linkedin_asset_id,
         "uploadToken": "",
         "uploadedPartIds": [linkedin_upload_response.headers.get('ETag')]
         }
-    }
+    })
+print(type(linkedin_upload_response.headers.get('ETag')))
 # linkedin_post_data=json.dumps(linkedin_post_data)
 print('-------------------LinkedinPostData:')
 print(data)
@@ -91,7 +93,36 @@ linkedin_headers = {
     "X-Restli-Protocol-Version": "2.0.0"
 }
 linkedin_post_response = requests.post(
-    linkedin_url, headers=linkedin_headers, data=json.dumps(data))
+    linkedin_url, headers=linkedin_headers, data=data)
+print('-------------------LinkedinFinalizeResponse:')
+print(linkedin_post_response.text)
+print('-------------------LinkedinFinalizeResponse************')
+data={
+  "author": f"urn:li:person:{linkedin_profile_id}",
+  "commentary": post_text,
+  "visibility": "PUBLIC",
+  "distribution": {
+    "feedDistribution": "MAIN_FEED",
+    "targetEntities": [],
+    "thirdPartyDistributionChannels": []
+  },
+  "content": {
+    "media": {
+      "title":post_text[0:20],
+      "id": linkedin_asset_id
+    }
+  },
+  "lifecycleState": "PUBLISHED",
+}
+linkedin_headers = {
+    "Authorization": f"Bearer {linkedin_access_token}",
+    "Content-Type": "application/json",
+    "X-Restli-Protocol-Version": "2.0.0"
+}
+linkedin_post_response = requests.post(
+    linkedin_post_url, headers=linkedin_headers, data=json.dumps(data))
 print('-------------------LinkedinPostResponse:')
-print(linkedin_post_response.json())
+print(linkedin_post_response.text)
 print('-------------------LinkedinPostResponse************')
+
+

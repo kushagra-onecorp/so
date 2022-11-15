@@ -10,7 +10,6 @@ FaceBook Posts:
     Page Post Engagement
     Page Post Impressions
     Page Post Reactions
-    Page Video Posts
 
 Instagram Page:
     audience_city
@@ -56,6 +55,7 @@ Instagram Post:
         taps_forward
         taps_back
 LinkedIn User:
+    None
 LinkedIn Org Page:
     clicks: 
             careersPageClicks 
@@ -63,16 +63,16 @@ LinkedIn Org Page:
             careersPagePromoLinksClicks 
             careersPageEmployeesClicks 
             careersPageJobsClicks
-        views: 
-          careersPageViews 
-            uniquePageViews 
-            pageViews
-          overviewPageViews 
-            uniquePageViews 
-            pageViews
-          allPageViews 
-            uniquePageViews 
-            pageViews
+    views: 
+        careersPageViews 
+        uniquePageViews 
+        pageViews
+        overviewPageViews 
+        uniquePageViews 
+        pageViews
+        allPageViews 
+        uniquePageViews 
+        pageViews
 LinkedIn Org Post:
     uniqueImpressionsCount
         clickCount
@@ -83,3 +83,9 @@ LinkedIn Org Post:
         commentMentionsCount
         impressionCount
         shareMentionsCount
+Twitter Post:
+    Favorites
+    Retweets
+    Quote Tweets
+    Replies
+    Video Views

@@ -1,7 +1,7 @@
 import requests
 
 # Access Token from LinkedIn API
-linkedin_access_token= """AQWzYto687fM0l2nv8AxJA82d9GXCegbvv7H5c-6ONkFSoYVhu6WoXPfUVIKeoRc0mgYDa7kv6TzizKwPTHq1TnNpvUXUV2q863M422UCCdM-vkI2zlfaREMGjmVuU_jznVJuSpwB5L5xUMaCIwTKBRgTfETZitQg_Fu_kqbBQlM6Zgas9sU7BdNArmoEDfPp6Gba8U4M5ucnIS1fAH9-W7z5_3JiWHQ3pnDa2ChkuB518iMGg9B8muYq-akM-6JL4ZEnmA5jUh_S0PPdApAE-O62---daiWRmq_nr36ek_55ClZ0sDAeU-nM82PIywbwXYXFaboK81k3n9E-s7Ko-HWsVVMHA"""
+linkedin_access_token= """AQXXi-OtP2vmDU5s1hDPafx5ywKFY5uEg3MzPazm8vAEMH5nKbTTTXLzYMSxzMqIDj9Way2XWtFW2s3iNMvAudIS-Ya_hD0OyTZBQlUv6JlYhFzwPh4assPVK3rbW--CHwkij8Kc2wroBooNhsMeliOQQyBeELKngQrmAiRKIbCLzIL4CxGPYmV4kYLRh4tDDO6UV64OwAze4-9s-NMw3AK8d6d2pmJWQufKm-LPRbBNi1O2pF_1cQ4ikatMKHxSRp48ncoBw8YuZrSr--Mn3QkluTPoXGs2B3Uu4F5vfA8zbUIY3HX4neD_rgg3-j37a_e3o6851bt2SFnlWQ26GJHqSeW7NQ"""
 # linkedin_access_token= """AQUXgjoc2xhG-he6aXfg1pkalPUAeOIZcRTCRW8mXuTjvPvAMljLfTvs10vB_c6wObKZg8IAVUY3CNZLpZ_OLpYtXEP3JCdcgENBehJecsBbnp7EN_Z7YxNsWiUagwHnFxGBdBOlANW_qMj0EwL6cshe00izXsJbbhjLCD7VvDExQNhayU-K7ROJKalcwIGv65gIi7cq8UMMX_HtJVlTMS1_wVv0WVYZyzkdF5O6yjqEzQSLa_2mKT3o88o7EJrqCRDpEgwcFMIBY0OMXWLt7PhRQSeezt02B9Dr1Galt4kyuxM5gmhreII16Kyf_ghrcso3JvFBhQhjOiXnTD__xZanhY5TTw"""
 # Post Title
 post_title='Post Title'
@@ -13,7 +13,7 @@ post_text=f"""
 {post_description}
 """
 # LinkedIn Profile ID
-linkedin_profile_id='gXaSyTq5Tm'
+linkedin_profile_id='iyflcZ2ma3'
 # 
 linkedin_url = "https://api.linkedin.com/v2/ugcPosts"
 linkedin_register_url='https://api.linkedin.com/v2/assets?action=registerUpload'
